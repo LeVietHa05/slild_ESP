@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP32 LED + LED MATRIX + LCD </title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">LED, LED MATRIX, LCD</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: Hiểu và sử dụng led, led matrix, lcd.</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+    <div class="slide" id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về LED và cách kết nối với ESP32/ESP8266</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần ảnh bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://media.rs-online.com/R1278393-01.jpg" class="img-fluid"
+                        alt="Cấu trúc LED (anode/cathode)">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/LED%2C_5mm%2C_green_%28en%29.svg/250px-LED%2C_5mm%2C_green_%28en%29.svg.png"
+                        class="img-fluid" alt="Kết nối LED với ESP8266">
+                    <img src="https://hackster.imgix.net/uploads/attachments/1358327/wokwi-arduino-blinkled-esp32-simulator_TPoq73ITo0.gif"
+                        class="img-fluid" alt="Sơ đồ GPIO ESP32">
+                    <img src="https://thumbs.wokwi.com/projects/376315379415336961/social/1695142201464.png"
+                        class="img-fluid" alt="LED nhấp nháy trên breadboard">
+                </div>
+            </div>
+            <!-- Phần nội dung bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="">LED (Light Emitting Diode) là linh kiện cơ bản trong các dự án IoT, thường
+                        được
+                        dùng để hiển thị trạng thái hoặc tạo hiệu ứng ánh sáng.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cấu trúc LED:</strong> LED có 2 chân: anode (dương, chân
+                            dài) và
+                            cathode (âm, chân ngắn). Dòng điện chạy từ anode đến cathode để phát sáng.</li>
+                        <li class="list-group-item"><strong>Kết nối với ESP32/ESP8266:</strong> Kết nối anode với chân
+                            GPIO
+                            (ví dụ: D2 trên ESP8266), cathode với GND qua điện trở (220-330 ohm) để hạn dòng, tránh cháy
+                            LED.</li>
+                        <li class="list-group-item"><strong>Lưu ý về dòng điện:</strong> LED thường cần 10-20 mA, điện
+                            áp
+                            2-3V. ESP32/ESP8266 cung cấp 3.3V, phù hợp, nhưng không dùng trực tiếp 5V (cần điện trở phù
+                            hợp).</li>
+                        <li class="list-group-item"><strong>Các chân GPIO:</strong> ESP8266 có 17 GPIO (D0-D8 phổ biến),
+                            ESP32 có 36 GPIO. Tránh dùng chân đặc biệt (như D0 trên ESP8266 không hỗ trợ ngắt).</li>
+                        <li class="list-group-item"><strong>Điều khiển LED:</strong> Dùng digitalWrite() để bật/tắt LED,
+                            delay() hoặc millis() để tạo hiệu ứng nháy.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Ví dụ code: Điều khiển LED nhấp nháy</h4>
+                    <pre>
+void setup() {
+    pinMode(D2, OUTPUT); // Chân D2 làm output
+}
+
+void loop() {
+    digitalWrite(D2, HIGH); // Bật LED
+    delay(1000); // Đợi 1 giây
+    digitalWrite(D2, LOW); // Tắt LED
+    delay(1000); // Đợi 1 giây
+}
+                  </pre>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Nếu LED không sáng, kiểm tra kết nối (đúng chân
+                        chưa),
+                        điện trở, hoặc thử đổi chiều LED (anode/cathode).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu LED Matrix và giao tiếp với ESP32/ESP8266</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần ảnh bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://bizweb.dktcdn.net/thumb/1024x1024/100/408/906/products/led-matrix-8x8-60x60mm-do-anot-1-f3cd4a09-a67b-4186-80bd-3911096830bf.jpg"
+                        class="img-fluid" alt="LED Matrix 8x8">
+                    <img src="https://thumbs.wokwi.com/projects/390694792291576833/social/1708857206047.png"
+                        class="img-fluid" alt="Kết nối MAX7219 với ESP8266">
+                    <img src="https://www.elektormagazine.com/assets/upload/img/public/original/img-8179.jpeg"
+                        class="img-fluid" alt="Hiển thị ký tự trên LED Matrix">
+                </div>
+            </div>
+            <!-- Phần nội dung bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">LED Matrix là ma trận các đèn LED (thường 8x8), được dùng để hiển thị ký tự,
+                        số, hoặc hình ảnh đơn giản, rất phổ biến trong các dự án IoT với ESP32.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cấu trúc LED Matrix:</strong> Gồm 64 LED (8x8), mỗi LED có
+                            thể điều khiển độc lập. Thường dùng mô-đun MAX7219 để điều khiển, giúp tiết kiệm GPIO trên
+                            ESP32.
+                        </li>
+                        <li class="list-group-item"><strong>Mô-đun MAX7219:</strong> Điều khiển LED Matrix qua giao thức
+                            SPI (3 chân: DIN, CLK, CS). MAX7219 quản lý dòng điện, quét ma trận, và hiển thị dữ liệu.
+                        </li>
+                        <li class="list-group-item"><strong>Kết nối với ESP32:</strong> Kết nối DIN (Data In) với GPIO
+                            23, CLK (Clock) với GPIO 18, CS (Chip Select) với GPIO 5, và nguồn (VCC: 5V, GND: GND).
+                            ESP32 điều
+                            khiển qua thư viện hỗ trợ.</li>
+                        <li class="list-group-item"><strong>Thư viện hỗ trợ:</strong> Sử dụng thư viện LedControl hoặc
+                            MD_MAX72XX trên Arduino IDE/PlatformIO. Cài đặt: Sketch > Include Library > Manage
+                            Libraries, tìm "LedControl".
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> MAX7219 cần nguồn 5V ổn định (dùng nguồn
+                            ngoài nếu cần), kiểm tra kết nối SPI, và tránh nhầm chân DIN/CLK/CS. ESP32 cung cấp 3.3V
+                            logic, nhưng MAX7219 thường tương thích tốt.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Ví dụ code: Hiển thị ký tự "A" trên LED Matrix</h4>
+                    <pre>
+#include <\LedControl.h>
+
+// Khởi tạo LedControl (DIN, CLK, CS, số ma trận)
+LedControl lc = LedControl(23, 18, 5, 1);
+
+void setup() {
+    lc.shutdown(0, false); // Bật ma trận
+    lc.setIntensity(0, 8); // Độ sáng (0-15)
+    lc.clearDisplay(0); // Xóa màn hình
+    // Ký tự "A" dạng 8x8
+    byte a[8] = {0x18, 0x24, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x42};
+    for (int i = 0; i < 8; i++) {
+        lc.setRow(0, i, a[i]);
+    }
+}
+
+void loop() {
+// Có thể thêm hiệu ứng cuộn hoặc thay đổi ký tự
+}
+              </pre>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Nếu ma trận không hiển thị, kiểm tra nguồn, chân
+                        kết nối (GPIO 23, 18, 5), và đảm bảo cài đúng thư viện. Dùng Serial Monitor để debug trạng thái.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">Cài đặt và lựa chọn thư viện cho LED Matrix</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần hướng dẫn PlatformIO bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Cài đặt thư viện trên PlatformIO</h4>
+                    <p class="text-muted">Giả sử bạn đã có project PlatformIO, dưới đây là cách thêm thư viện cho LED
+                        Matrix:</p>
+                    <ol class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mở file platformio.ini:</strong> Trong thư mục project, tìm
+                            file
+                            <code>platformio.ini</code> và mở bằng VSCode.
+                        </li>
+                        <li class="list-group-item"><strong>Thêm thư viện:</strong> Trong phần
+                            <code>[env:esp32dev]</code>,
+                            thêm dòng <code>lib_deps</code> để cài thư viện. Ví dụ:
+                            <pre>
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+lib_deps = 
+    wayoda/LedControl @ ^1.0.6
+                      </pre>
+                        </li>
+                        <li class="list-group-item"><strong>Chọn thư viện phù hợp:</strong>
+                            - <strong>LedControl:</strong> Dễ dùng, hỗ trợ MAX7219, phù hợp cho LED Matrix 8x8 cơ bản.
+                            - <strong>MD_MAX72XX:</strong> Linh hoạt hơn, hỗ trợ nhiều ma trận (cascading), hiệu ứng
+                            cuộn
+                            chữ.
+                        </li>
+                        <li class="list-group-item"><strong>Cập nhật thư viện:</strong> Nhấn Ctrl+Alt+B (PlatformIO:
+                            Build)
+                            để tải thư viện. Nếu thành công, thư viện sẽ sẵn sàng trong project.</li>
+                    </ol>
+                    <p class="text-muted mt-2"><strong>Lưu ý:</strong> Nếu lỗi, kiểm tra tên thư viện trên <a
+                            href="https://registry.platformio.org/" target="_blank">registry.platformio.org</a> hoặc
+                        dùng
+                        lệnh <code>pio lib install LedControl</code> trong terminal.</p>
+                </div>
+            </div>
+            <!-- Phần hướng dẫn Wokwi bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Cài đặt thư viện trên Wokwi</h4>
+                    <p class="text-muted">Wokwi không yêu cầu cài thư viện thủ công như PlatformIO, nhưng bạn có thể
+                        tích hợp qua PlatformIO hoặc thêm code thủ công. Dưới đây là cách:</p>
+                    <ol class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Sử dụng PlatformIO Integration:</strong> Nếu dùng Wokwi với
+                            VSCode và PlatformIO (như slide trước), thư viện (ví dụ: LedControl) đã được cài trong
+                            <code>platformio.ini</code> và tự động áp dụng khi mô phỏng.
+                        </li>
+                        <li class="list-group-item"><strong>Thêm thủ công (nếu cần):</strong> Trong Wokwi, có một mục là
+                            <strong>Library manager</strong> có thể được sử dụng để thêm các thư viện. Bấm vào dấu "+"
+                            và tìm kiếm <strong>ledcontrol</strong> rồi click và vào tên là được
+                        </li>
+                        <li class="list-group-item"><strong>Chọn thư viện phù hợp:</strong>
+                            - <strong>LedControl:</strong> Phù hợp cho MAX7219, dễ tích hợp, hỗ trợ hiển thị cơ bản.
+                            - <strong>MD_MAX72XX:</strong> Tốt cho hiệu ứng phức tạp, nhưng cần thêm mã nguồn nếu Wokwi
+                            không hỗ trợ trực tiếp.
+                        </li>
+                        <li class="list-group-item"><strong>Kiểm tra mô phỏng:</strong> Sau khi thêm, nhấn Play (tam
+                            giác
+                            xanh) để chạy. Đảm bảo code sử dụng thư viện khớp với sơ đồ (ví dụ: GPIO 23, 18, 5).</li>
+                    </ol>
+                    <p class="text-muted mt-2"><strong>Lưu ý:</strong> Wokwi ưu tiên thư viện từ PlatformIO. Nếu lỗi,
+                        kiểm
+                        tra file <code>wokwi.toml</code> và <code>diagram.json</code> đã đúng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu LCD và giao tiếp với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">LCD (Liquid Crystal Display) 16x2 là màn hình phổ biến trong các dự án IoT, có
+                        thể
+                        hiển thị 16 ký tự trên 2 dòng, thường dùng với giao thức I2C để giảm số chân kết nối.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cấu trúc LCD 16x2:</strong> Có 16 cột, 2 dòng, mỗi ký tự là
+                            ma
+                            trận 5x8 điểm. Dùng mô-đun I2C (PCF8574) để giao tiếp với ESP32 qua 2 chân (SDA, SCL).</li>
+                        <li class="list-group-item"><strong>Kết nối với ESP32:</strong> Kết nối SDA với GPIO 21, SCL với
+                            GPIO 22, VCC với 5V (hoặc 3.3V tùy mô-đun), GND với GND. ESP32 hỗ trợ I2C tích hợp, không
+                            cần
+                            thêm phần cứng.</li>
+                        <li class="list-group-item"><strong>Thư viện hỗ trợ:</strong> Sử dụng thư viện LiquidCrystal_I2C
+                            trên PlatformIO hoặc Arduino IDE. Cần tìm địa chỉ I2C của LCD (thường là 0x27 hoặc 0x3F)
+                            bằng
+                            I2C Scanner.</li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> Kiểm tra địa chỉ I2C trước khi lập trình
+                            (dùng
+                            code I2C Scanner). Đảm bảo nguồn 5V ổn định cho LCD, và điều chỉnh độ tương phản (dùng biến
+                            trở
+                            trên mô-đun I2C). Tránh xung đột I2C nếu dùng nhiều thiết bị.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Ví dụ code: Hiển thị "Hello, ESP32!" trên LCD</h4>
+                    <pre>
+#include <\Wire.h>
+#include <\LiquidCrystal_I2C.h>
+
+// Khởi tạo LCD (địa chỉ I2C, 16 cột, 2 dòng)
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+    Wire.begin(21, 22); // SDA: GPIO 21, SCL: GPIO 22
+    lcd.init(); // Khởi động LCD
+    lcd.backlight(); // Bật đèn nền
+    lcd.setCursor(0, 0); // Đặt con trỏ dòng 1, cột 1
+    lcd.print("Hello, ESP32!"); // In dòng 1
+    lcd.setCursor(0, 1); // Dòng 2, cột 1
+    lcd.print("LCD 16x2 I2C"); // In dòng 2
+}
+
+void loop() {
+// Có thể thêm hiệu ứng cuộn hoặc cập nhật dữ liệu
+}
+                  </pre>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Nếu LCD không hiển thị, kiểm tra địa chỉ I2C, kết
+                        nối
+                        (SDA, SCL), hoặc điều chỉnh độ tương phản. Dùng Serial Monitor để debug.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://bizweb.dktcdn.net/100/445/721/files/i2c.png?v=1655770220836" class="img-fluid"
+                        alt="LCD 16x2 với mô-đun I2C">
+                    <img src="https://lastminuteengineers.com/wp-content/uploads/iot/Wiring-I2C-LCD-Display-to-ESP32.png"
+                        class="img-fluid" alt="Kết nối LCD với ESP32">
+                    <img src="https://thumbs.wokwi.com/projects/384876107861994497/social/1703306097041.png"
+                        class="img-fluid" alt="LCD hiển thị Hello, ESP32!">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Ví dụ thực hành: Điều khiển 8 LED đơn</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Thực hành điều khiển 8 LED đơn trên ESP32, sử dụng mảng để lưu chân GPIO và
+                        vòng
+                        lặp để điều khiển nháy tuần tự.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mục tiêu:</strong> Sử dụng mảng để quản lý 8 chân GPIO, dùng
+                            vòng lặp để bật/tắt LED theo thứ tự từ LED 1 đến LED 8, sau đó ngược lại. Có thể thử các
+                            cách nháy khác </li>
+                        <li class="list-group-item"><strong>Kết nối:</strong> Kết nối 8 LED với các chân GPIO 15, 2, 4,
+                            16,
+                            17, 5, 18, 19 trên ESP32, mỗi LED cần điện trở 220-330 ohm nối với GND.</li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> Đảm bảo không xung đột chân GPIO (tránh các
+                            chân
+                            như GPIO 0, 2 khi khởi động). Kiểm tra điện áp và dòng để không làm hỏng LED.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code mẫu: Điều khiển 8 LED tuần tự</h4>
+                    <pre>
+//  Code mẫu điều khiển 8 LED
+#include <\Arduino.h>
+
+const int ledPins[8] = {15, 2, 4, 16, 17, 5, 18, 19}; // Mảng lưu chân GPIO
+
+void setup() {
+for (int i = 0; i < 8; i++) {
+    pinMode(ledPins[i], OUTPUT);
+}
+}
+
+void loop() {
+    // Bật tuần tự từ LED 1 đến LED 8
+    for (int i = 0; i < 8; i++) {
+        digitalWrite(ledPins[i], HIGH);
+        delay(200);
+        digitalWrite(ledPins[i], LOW);
+    }
+    // Tắt ngược từ LED 8 đến LED 1
+    for (int i = 7; i >= 0; i--) {
+        digitalWrite(ledPins[i], HIGH);
+        delay(200);
+        digitalWrite(ledPins[i], LOW);
+    }
+}
+                  </pre>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://thumbs.wokwi.com/projects/386405589465141249/social/1704763948378.png"
+                        class="img-fluid" alt="Sơ đồ kết nối 8 LED với ESP32">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Ví dụ thực hành: Hiển thị trên LED Matrix</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class=" overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Thực hành hiển thị "Hello World" trên LED Matrix 8x8 với ESP32, sử dụng mô-đun
+                        MAX7219, và tạo hiệu ứng chữ chạy từ trái qua phải liên tục.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mục tiêu:</strong> Hiển thị "Hello World" trên LED Matrix,
+                            sử
+                            dụng thư viện LedControl, và tạo hiệu ứng cuộn chữ từ trái qua phải.</li>
+                        <li class="list-group-item"><strong>Kết nối:</strong> Kết nối MAX7219 với ESP32: DIN (GPIO 23),
+                            CLK
+                            (GPIO 18), CS (GPIO 5), VCC (5V), GND (GND).</li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> Đảm bảo thư viện LedControl đã được cài (như
+                            slide trước). Kiểm tra độ sáng và nguồn 5V để hiển thị rõ nét.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code mẫu: Hiển thị "Hello World" và cuộn chữ</h4>
+                    <pre>
+          // Placeholder: Code mẫu hiển thị "Hello World" trên LED Matrix
+#include <\LedControl.h>
+
+LedControl lc = LedControl(23, 18, 5, 1); // DIN, CLK, CS, số ma trận
+
+void setup() {
+    lc.shutdown(0, false);
+    lc.setIntensity(0, 8);
+    lc.clearDisplay(0);
+}
+
+void loop() {
+    // Hiển thị "Hello World" và cuộn từ trái qua phải
+    // Dùng hàm scroll hoặc tự viết logic cuộn
+    // Ví dụ: Dùng mảng ký tự và dịch từng bước
+    byte helloWorld[] = { /* Dữ liệu ký tự Hello World */ };
+    // Logic cuộn (placeholder)
+    for (int i = 0; i < sizeof(helloWorld); i++) {
+        lc.setRow(0, i % 8, helloWorld[i]);
+        delay(100);
+    }
+}
+                  </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Ví dụ thực hành: Hiển thị nhiệt độ trên LCD</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Thực hành đọc giá trị nhiệt độ từ cảm biến DHT11 và hiển thị trên LCD 16x2 với
+                        ESP32, sử dụng giao thức I2C (giả sử thư viện đã cài).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mục tiêu:</strong> Đọc nhiệt độ từ cảm biến DHT11, hiển thị
+                            trên
+                            LCD 16x2, cập nhật giá trị mỗi 2 giây.</li>
+                        <li class="list-group-item"><strong>Kết nối:</strong> DHT11: DATA (GPIO 4), VCC (3.3V), GND
+                            (GND).
+                            LCD: SDA (GPIO 21), SCL (GPIO 22), VCC (5V), GND (GND).</li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> Đảm bảo địa chỉ I2C của LCD đúng (0x27 hoặc
+                            0x3F). Kiểm tra cảm biến DHT11 hoạt động bằng Serial Monitor trước khi hiển thị.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code mẫu: Hiển thị nhiệt độ trên LCD</h4>
+                    <pre>
+// Placeholder: Code mẫu hiển thị nhiệt độ từ DHT11 trên LCD
+#include <\Wire.h>
+#include <\LiquidCrystal_I2C.h>
+#include <\DHT.h>
+
+#define DHTPIN latin1
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+    Wire.begin(21, 22); // SDA, SCL
+    lcd.init();
+    lcd.backlight();
+    dht.begin();
+}
+
+void loop() {
+    float temp = dht.readTemperature();
+    lcd.setCursor(0, 0);
+    lcd.print("Temp: ");
+    lcd.print(temp);
+    lcd.print(" C");
+    delay(2000);
+}
+                  </pre>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://thumbs.wokwi.com/projects/378985044083888129/social/1697688776175.png"
+                        class="img-fluid" alt="Cảm biến DHT11 và LCD với ESP32">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">Lưu ý khi lập trình và kết nối phần cứng</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Khi làm việc với LED, LCD, và LED Matrix trên ESP32, dưới đây là các lưu ý và
+                        lỗi
+                        phổ biến mà bạn cần biết để tránh gặp vấn đề:</p>
+                    <h4 class="mt-3 mb-2">Lưu ý và lỗi với LED:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối sai cực:</strong> LED có anode (dương) và cathode
+                            (âm).
+                            Nếu kết nối ngược (anode với GND, cathode với GPIO), LED sẽ không sáng. Luôn kiểm tra chiều
+                            LED
+                            trước khi kết nối.</li>
+                        <li class="list-group-item"><strong>Quên điện trở hạn dòng:</strong> LED cần điện trở 220-330
+                            ohm
+                            nối với GND để hạn dòng (10-20 mA). Nếu không có, LED hoặc ESP32 có thể bị cháy. Dùng công
+                            thức
+                            R = (Vcc - Vled) / I để tính điện trở (Vcc = 3.3V, Vled ≈ 2V, I = 0.02A).</li>
+                        <li class="list-group-item"><strong>Dòng vượt quá giới hạn GPIO:</strong> Mỗi GPIO của ESP32
+                            cung
+                            cấp tối đa 20 mA. Nếu dùng nhiều LED cùng lúc (như 8 LED), tổng dòng có thể vượt quá, gây
+                            hỏng
+                            chân. Dùng transistor hoặc nguồn ngoài nếu cần.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý và lỗi với LCD (16x2 I2C):</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Địa chỉ I2C sai:</strong> LCD I2C thường có địa chỉ 0x27
+                            hoặc
+                            0x3F. Nếu sai địa chỉ trong code (như lcd.begin(0x27)), LCD không hiển thị. Dùng I2C Scanner
+                            để
+                            xác định địa chỉ chính xác.</li>
+                        <li class="list-group-item"><strong>Xung đột I2C:</strong> ESP32 dùng GPIO 21 (SDA) và 22 (SCL)
+                            cho
+                            I2C. Nếu kết nối nhiều thiết bị I2C (như LCD và cảm biến), có thể xảy ra xung đột. Kiểm tra
+                            địa
+                            chỉ và thêm điện trở pull-up (4.7k ohm) nếu cần.</li>
+                        <li class="list-group-item"><strong>Độ tương phản thấp:</strong> Nếu LCD không hiển thị rõ, điều
+                            chỉnh biến trở trên mô-đun I2C để tăng độ tương phản. Nếu không có biến trở, kiểm tra nguồn
+                            (5V)
+                            và đèn nền (lcd.backlight()).</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý và lỗi với LED Matrix (MAX7219):</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Nguồn không đủ:</strong> LED Matrix 8x8 với MAX7219 tiêu thụ
+                            nhiều dòng (tối đa 300 mA nếu sáng toàn bộ). ESP32 không cung cấp đủ qua USB (500 mA). Dùng
+                            nguồn ngoài 5V hoặc kiểm tra độ sáng (lc.setIntensity(0, 8)).</li>
+                        <li class="list-group-item"><strong>Kết nối SPI sai:</strong> MAX7219 dùng SPI (DIN: GPIO 23,
+                            CLK:
+                            GPIO 18, CS: GPIO 5). Nếu nhầm chân (như DIN với CLK), ma trận không hoạt động. Kiểm tra kỹ
+                            sơ
+                            đồ kết nối và code.</li>
+                        <li class="list-group-item"><strong>Ma trận không hiển thị:</strong> Nếu LED Matrix không sáng,
+                            kiểm
+                            tra nguồn 5V, đảm bảo lc.shutdown(0, false) trong setup(), và thử giảm độ sáng
+                            (lc.setIntensity(0, 4)) để giảm tiêu thụ dòng.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý chung:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Debug với Serial Monitor:</strong> Luôn dùng
+                            Serial.begin(115200) và Serial.println() để in trạng thái (như giá trị nhiệt độ, trạng thái
+                            GPIO). Nếu không thấy gì, kiểm tra baud rate khớp với IDE.</li>
+                        <li class="list-group-item"><strong>Quản lý nguồn:</strong> ESP32 dùng nguồn USB (5V, 500 mA)
+                            hoặc
+                            pin. Nếu dùng nhiều thiết bị (LED, LCD, LED Matrix), tổng dòng có thể vượt quá. Dùng nguồn
+                            ngoài
+                            và tụ lọc (100uF) để ổn định.</li>
+                        <li class="list-group-item"><strong>Tránh delay() trong code phức tạp:</strong> Dùng delay() sẽ
+                            dừng
+                            toàn bộ chương trình, ảnh hưởng đến các tác vụ (như cập nhật LCD). Thay bằng millis() để xử
+                            lý
+                            đa nhiệm.</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Bắt đầu với từng thiết bị riêng lẻ, kiểm tra trên
+                        Wokwi
+                        trước, và đọc kỹ tài liệu của từng linh kiện (LED, LCD, MAX7219).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 9;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

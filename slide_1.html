@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP8266, ESP32, C++ và Wokwi</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">Giới thiệu về ESP8266, ESP32, C++ và Wokwi</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: Hiểu và áp dụng ESP8266, ESP32, C++</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+    <div class="slide" id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu ESP8266</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần chữ bên trái -->
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">ESP8266 là một vi điều khiển tích hợp Wi-Fi giá rẻ, được phát triển bởi Espressif
+                    Systems, rất phổ biến trong các dự án IoT.</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Đặc điểm kỹ thuật:</strong> CPU 32-bit Tensilica L106, 80 MHz,
+                        RAM
+                        64 KB, Flash tối đa 4 MB.</li>
+                    <li class="list-group-item"><strong>Kết nối:</strong> Wi-Fi 802.11 b/g/n, hỗ trợ chế độ Station,
+                        SoftAP.
+                    </li>
+                    <li class="list-group-item"><strong>Ứng dụng thực tế:</strong> Cảm biến nhiệt độ qua Wi-Fi, điều
+                        khiển
+                        đèn thông minh, hệ thống tưới cây tự động.</li>
+                    <li class="list-group-item"><strong>Cách sử dụng cơ bản:</strong> Lập trình qua Arduino IDE, kết nối
+                        với
+                        GPIO để điều khiển thiết bị.</li>
+                </ul>
+            </div>
+            <!-- Phần ảnh bên phải -->
+            <div class="col-6 d-flex justify-content-center align-items-center">
+                <img src="https://nshopvn.com/wp-content/uploads/2019/03/so-do-chan-module-thu-phat-wifi-esp8266-nodemcu-lua-cp2102-md4d-1.jpg"
+                    class="img-fluid" alt="Sơ đồ chân ESP8266">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần ảnh bên trái -->
+            <div class="col-6 d-flex justify-content-center align-items-center">
+                <img src="https://www.upesy.com/cdn/shop/files/doc-esp32-pinout-reference-wroom-devkit.png"
+                    class="img-fluid" alt="Bảng so sánh ESP8266 vs ESP32">
+            </div>
+            <!-- Phần chữ bên phải -->
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">ESP32 là vi điều khiển nâng cấp của ESP8266, được phát triển bởi Espressif
+                    Systems, hỗ
+                    trợ cả Wi-Fi và Bluetooth, phù hợp cho các dự án IoT phức tạp.</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Đặc điểm kỹ thuật:</strong> CPU lõi kép Xtensa LX6, 240 MHz, RAM
+                        520
+                        KB, Flash tối đa 16 MB.</li>
+                    <li class="list-group-item"><strong>Kết nối:</strong> Wi-Fi 802.11 b/g/n, Bluetooth 4.2/BLE, hỗ trợ
+                        nhiều giao thức.</li>
+                    <li class="list-group-item"><strong>Ứng dụng thực tế:</strong> Nhà thông minh (điều khiển qua ứng
+                        dụng),
+                        robot điều khiển từ xa, hệ thống giám sát an ninh.</li>
+                    <li class="list-group-item"><strong>Cách sử dụng cơ bản:</strong> Lập trình qua Arduino IDE hoặc
+                        ESP-IDF, hỗ trợ nhiều GPIO và cảm biến.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">So sánh ESP8266 và ESP32</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <div class=" d-flex flex-column justify-content-center text-left ">
+                <p class="text-muted">ESP8266 và ESP32 là hai vi điều khiển phổ biến trong IoT, nhưng chúng khác nhau về
+                    hiệu năng, tính năng và ứng dụng. Dưới đây là so sánh chi tiết:</p>
+                <table class="table table-striped table-bordered mt-3 ">
+                    <thead>
+                        <tr>
+                            <th>Khía cạnh</th>
+                            <th>ESP8266</th>
+                            <th>ESP32</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CPU</strong></td>
+                            <td>1 lõi Tensilica L106, 80 MHz</td>
+                            <td>2 lõi Xtensa LX6, lên đến 240 MHz</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RAM</strong></td>
+                            <td>64 KB</td>
+                            <td>520 KB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Flash</strong></td>
+                            <td>Tối đa 4 MB</td>
+                            <td>Tối đa 16 MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Kết nối</strong></td>
+                            <td>Wi-Fi 802.11 b/g/n</td>
+                            <td>Wi-Fi 802.11 b/g/n + Bluetooth 4.2/BLE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Số GPIO</strong></td>
+                            <td>17</td>
+                            <td>36</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tiêu thụ điện</strong></td>
+                            <td>Thấp, ~20 mA (chế độ hoạt động)</td>
+                            <td>Hơi cao hơn, ~70 mA (chế độ hoạt động)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ứng dụng lý tưởng</strong></td>
+                            <td>Dự án đơn giản (cảm biến, đèn)</td>
+                            <td>Dự án phức tạp (nhà thông minh, robot)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Giá cả</strong></td>
+                            <td>Rẻ hơn (~$2-$4)</td>
+                            <td>Mắc hơn (~$4-$7)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-muted mt-3">Lựa chọn giữa ESP8266 và ESP32 phụ thuộc vào yêu cầu dự án: ESP8266 phù hợp
+                    với
+                    ngân sách thấp, trong khi ESP32 lý tưởng cho hiệu năng cao và đa kết nối.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu C++ trong IoT</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <div class="d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">C++ là ngôn ngữ lập trình mạnh mẽ, được sử dụng trong lập trình nhúng như Arduino.
+                    Nó
+                    hỗ trợ các khái niệm cơ bản như biến, hàm, vòng lặp, và điều kiện.</p>
+                <h4 class="mt-3 mb-2">Các khái niệm cơ bản:</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Kiểu biến:</strong> int, float, char, bool (ví dụ: int x = 10;
+                        float
+                        y = 3.14;).</li>
+                    <li class="list-group-item"><strong>Vòng lặp:</strong> for, while (dùng để lặp lại hành động).</li>
+                    <li class="list-group-item"><strong>Điều kiện:</strong> if-else (dùng để ra quyết định).</li>
+                    <li class="list-group-item"><strong>Hàm:</strong> Tái sử dụng code (ví dụ: void setup(), void
+                        loop(), void blinkLed()).
+                    </li>
+                </ul>
+                <h4 class="mt-3 mb-2">Ví dụ code trong Arduino:</h4>
+                <pre>
+          int ledPin = 13; // Kiểu biến: int
+          bool isOn = false; // Kiểu biến: bool
+          
+          void setup() {
+            pinMode(ledPin, OUTPUT); // Khai báo chân
+          }
+          
+          void loop() {
+            for (int i = 0; i < 5; i++) { // Vòng lặp for
+              digitalWrite(ledPin, HIGH);
+              delay(500);
+              digitalWrite(ledPin, LOW);
+              delay(500);
+            }
+          
+            if (isOn) { // Điều kiện if-else
+              digitalWrite(ledPin, HIGH);
+            } else {
+              digitalWrite(ledPin, LOW);
+            }
+          
+            blinkLed(3); // Gọi hàm
+            
+          }
+
+          void blinkLed(int times) { // Hàm tự khai báo 
+            for (int i = 0; i < times; i++) {
+              digitalWrite(ledPin, HIGH);
+              delay(1000);
+              digitalWrite(ledPin, LOW);
+              delay(1000);
+            }
+          }
+                </pre>
+                <p class="text-muted mt-2">Code trên điều khiển LED nhấp nháy 5 lần bằng vòng lặp for, sau đó dùng
+                    if-else
+                    và gọi hàm tùy chỉnh.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Cài đặt môi trường C++ cho Arduino</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <!-- Phần ảnh và hướng dẫn PlatformIO bên trái -->
+            <div class="col-6 d-flex flex-column">
+                <div class="text-left">
+                    <h4 class="mb-2">Cài đặt PlatformIO trên VSCode:</h4>
+                    <ol class="list-group list-group-flush">
+                        <li class="list-group-item">Cài đặt VSCode: Tải từ <a href="https://code.visualstudio.com/"
+                                target="_blank">code.visualstudio.com</a>.</li>
+                        <li class="list-group-item">Cài PlatformIO: Mở Extensions (Ctrl+Shift+X), tìm "PlatformIO IDE",
+                            nhấn
+                            Install.</li>
+                        <li class="list-group-item">Tạo project: Nhấn Ctrl+Alt+N, chọn "PIO Home" > "New Project", đặt
+                            tên,
+                            chọn ESP8266/ESP32.</li>
+                        <li class="list-group-item">Mở project: Chọn thư mục project, chỉnh sửa file
+                            <code>main.cpp</code>.
+                        </li>
+                    </ol>
+
+                </div>
+            </div>
+            <!-- Phần hướng dẫn Arduino IDE bên phải -->
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <h4 class="mb-2">Cài đặt Arduino IDE:</h4>
+                <ol class="list-group list-group-flush">
+                    <li class="list-group-item">Tải Arduino IDE: Từ <a href="https://www.arduino.cc/en/software"
+                            target="_blank">arduino.cc</a>.</li>
+                    <li class="list-group-item">Cài đặt: Chạy file cài đặt, hoàn tất quá trình.</li>
+                    <li class="list-group-item">Thêm ESP8266/ESP32: File > Preferences, thêm URL board manager (ESP8266:
+                        "http://arduino.esp8266.com/stable/package_esp8266com_index.json", ESP32:
+                        "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json").
+                    </li>
+                    <li class="list-group-item">Cài board: Tools > Board > Boards Manager, tìm và cài ESP8266/ESP32.
+                    </li>
+                    <li class="list-group-item">Tạo project: File > New, viết code, chọn board, nhấn Upload.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu Wokwi</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <!-- Phần chữ bên trái -->
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">Wokwi là một nền tảng mô phỏng trực tuyến tiên tiến, hỗ trợ lập trình và thử
+                    nghiệm
+                    các dự án IoT với ESP8266, ESP32, Arduino, STM32, và Raspberry Pi Pico mà không cần phần cứng thực
+                    tế.
+                </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Đặc điểm nổi bật:</strong> Chạy trong trình duyệt, hỗ trợ Wi-Fi
+                        ảo,
+                        tích hợp với VSCode, và cung cấp thư viện linh kiện phong phú.</li>
+                    <li class="list-group-item"><strong>Tính năng:</strong> Mô phỏng cảm biến, động cơ, màn hình, và
+                        giao
+                        tiếp IoT (MQTT, HTTP); hỗ trợ MicroPython và C++.</li>
+                    <li class="list-group-item"><strong>Ứng dụng:</strong> Học lập trình nhúng, kiểm tra ý tưởng, và
+                        chia sẻ
+                        dự án qua liên kết.</li>
+                    <li class="list-group-item"><strong>Hướng dẫn sử dụng:</strong> Truy cập wokwi.com, tạo dự án mới,
+                        chọn
+                        bo mạch (ESP8266), thêm linh kiện, viết code, và chạy mô phỏng.</li>
+                </ul>
+                <pre>
+          void setup() {
+            pinMode(LED_BUILTIN, OUTPUT);
+          }
+          void loop() {
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(1000);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(1000);
+          }
+                </pre>
+                <p class="text-muted mt-2">Code trên mô phỏng LED nhấp nháy trên ESP8266 trong Wokwi.</p>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 " style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://www.cnx-software.com/wp-content/uploads/2023/04/WOKWI-Arduino-Raspberry-Pi-Pico-ESP32-simulator-720x432.png"
+                        class="img-fluid" alt="Giao diện Wokwi">
+                    <img src="https://cdn.hackaday.io/images/original/5614381632205366360.gif" class="img-fluid"
+                        alt="Mô phỏng LED nhấp nháy">
+                    <img src="https://www.cnx-software.com/wp-content/uploads/2023/04/Wokwi-add-components.png"
+                        class="img-fluid" alt="Thêm linh kiện trong Wokwi">
+                    <img src="https://user-images.githubusercontent.com/892318/142945076-c7178a5a-ed39-4006-b9ed-5cc355142ce5.png"
+                        class="img-fluid" alt="Kết nối Wi-Fi ảo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Hướng dẫn sử dụng Wokwi với PlatformIO trên VSCode</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <!-- Phần chữ -->
+            <div class="col-12 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">Wokwi tích hợp với PlatformIO trong VSCode, giúp mô phỏng các dự án IoT. Cần cả
+                    file
+                    <code>wokwi.toml</code> và <code>diagram.json</code> để thiết lập mô phỏng hoàn chỉnh.
+                </p>
+                <h4 class="mt-3 mb-2">Các bước thực hiện:</h4>
+                <ol class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Đảm bảo PlatformIO đã cài:</strong> Từ slide trước, bạn đã cài
+                        PlatformIO IDE trong VSCode (Extensions > PlatformIO IDE).</li>
+                    <li class="list-group-item"><strong>Cài extension Wokwi:</strong> Trong VSCode, mở Extensions
+                        (Ctrl+Shift+X), tìm "Wokwi Simulator", và nhấn Install.</li>
+                    <li class="list-group-item"><strong>Mở project PlatformIO:</strong> Mở thư mục project PlatformIO đã
+                        tạo
+                        trước đó (hoặc tạo mới: Ctrl+Alt+N > PIO Home > New Project, chọn ESP8266).</li>
+                    <li class="list-group-item"><strong>Thêm cấu hình Wokwi:</strong> Trong thư mục project, tạo file
+                        <code>wokwi.toml</code>:
+                        <pre>
+[wokwi]
+version = 1
+firmware = "build/esp8266/esp8266:esp8266:generic/firmware.bin"
+elf = "build/esp8266/esp8266:esp8266:generic/firmware.elf"
+                    </pre>
+                    </li>
+                    <li class="list-group-item"><strong>Tạo sơ đồ mạch:</strong> Tạo file <code>diagram.json</code> để
+                        định
+                        nghĩa mạch (ví dụ: ESP8266 với LED):
+                        <pre>
+{
+"version": 1,
+"author": "Your Name",
+"editor": "wokwi",
+"parts": [
+    { "type": "wokwi-esp8266", "id": "esp", "top": 0, "left": 0 },
+    { "type": "wokwi-led", "id": "led1", "top": 50, "left": 100, "attrs": { "color": "red" } }
+],
+"connections": [
+    ["esp:D2", "led1:A", "green", ["v0"]],
+    ["led1:C", "esp:GND", "black", ["v0"]]
+]
+}
+                    </pre>
+                    </li>
+                    <li class="list-group-item"><strong>Viết code trong PlatformIO:</strong> Mở file
+                        <code>src/main.cpp</code>, viết code điều khiển LED:
+                        <pre>
+#include <\Arduino.h>
+
+void setup() {
+    pinMode(D2, OUTPUT); // LED kết nối với chân D2
+}
+void loop() {
+    digitalWrite(D2, HIGH);
+    delay(500);
+    digitalWrite(D2, LOW);
+    delay(500);
+}
+                    </pre>
+                    </li>
+                    <li class="list-group-item"><strong>Chạy mô phỏng Wokwi:</strong> Nhấn F1, gõ "Wokwi: Start
+                        Simulator",
+                        Wokwi yêu cầu có lience, hiện tại sẽ miễn phí nhưng có yêu cầu đăng nhập, hãy bấm chấp nhận.
+                    </li>
+                </ol>
+                <p class="text-muted mt-3">Lưu ý: Build project PlatformIO trước (PlatformIO: Build). File
+                    <code>diagram.json</code> định nghĩa mạch, đảm bảo kết nối đúng với code.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">Bài tập về nhà</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <!-- Phần ảnh bên trái -->
+            <div class="col-6 d-flex justify-content-center align-items-center flex-column">
+                <img src="https://thumbs.wokwi.com/projects/386405589465141249/social/1704763948378.png"
+                    class="img-fluid" alt="8 LED nhấp nháy">
+                <pre>
+#include <Arduino.h>
+
+const int ledPins[8] = {D2, D3, D4, D5, D6, D7, D8, D9}; // Mảng lưu chân LED
+int mode = 0; // Biến chế độ nháy
+
+void setup() {
+    for (int i = 0; i < 8; i++) {
+    pinMode(ledPins[i], OUTPUT); // Khai báo chân làm output
+    }
+}
+
+void loop() {
+    if (mode == 0) { // Chế độ tuần tự
+        for (int i = 0; i < 8; i++) {
+            digitalWrite(ledPins[i], HIGH);
+            delay(200);
+            digitalWrite(ledPins[i], LOW);
+        }
+    } else if (mode == 1) { // Chế độ đồng loạt
+        for (int i = 0; i < 8; i++) {
+            digitalWrite(ledPins[i], HIGH);
+        }
+        delay(500);
+        for (int i = 0; i < 8; i++) {
+            digitalWrite(ledPins[i], LOW);
+        }
+        delay(500);
+    }
+    // Thêm chế độ khác (nháy ngẫu nhiên) nếu muốn
+    mode = (mode + 1) % 2; // Chuyển đổi chế độ (0 -> 1 -> 0)
+}
+        </pre>
+            </div>
+            <!-- Phần chữ bên phải -->
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">Bài tập: Điều khiển 8 bóng LED kết nối với ESP8266/ESP32, lập trình để chúng nháy
+                    ở
+                    các chế độ khác nhau.</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Yêu cầu:</strong> Sử dụng mảng để lưu chân LED, vòng lặp để điều
+                        khiển, và điều kiện để thay đổi chế độ nháy (ví dụ: nháy tuần tự, nháy đồng loạt, nháy ngẫu
+                        nhiên).
+                    </li>
+                    <li class="list-group-item"><strong>Thời gian:</strong> Hoàn thành trong 1 tuần, mô phỏng trên Wokwi
+                        hoặc chạy trên phần cứng.</li>
+                    <li class="list-group-item"><strong>Gợi ý:</strong> Sử dụng mảng để quản lý các chân LED, vòng lặp
+                        for
+                        để duyệt, và if-else để chuyển đổi chế độ.</li>
+                </ul>
+                <h4 class="mt-3 mb-2">Đoạn code gợi ý (on your left)</h4>
+
+                <p class="text-muted mt-2">Gợi ý: Thêm biến ngẫu nhiên (random) hoặc nút nhấn để thay đổi chế độ nháy.
+                    Nộp
+                    bài qua Wokwi link hoặc video demo.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-10">
+        <h2 class="h3 text-secondary mb-3 ">Ví dụ Wokwi: Cảm biến nhiệt độ</h2>
+        <div class="row w-100 h-100">
+            <div class="col-6 d-flex justify-content-center align-items-center flex-column">
+                <img src="https://thumbs.wokwi.com/projects/374823036701557761/social/1693717953285.png"
+                    class="img-fluid" alt="8 LED nhấp nháy">
+            </div>
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <pre>
+#include <\DHT.h>
+#define DHTPIN 4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+void setup() {
+    Serial.begin(115200);
+    dht.begin();
+}
+void loop() {
+    float t = dht.readTemperature();
+    Serial.println(t);
+    delay(2000);
+}
+        </pre>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-11">
+        <h2 class="h3 text-secondary mb-3 ">Ví dụ Wokwi: Kết nối Wi-Fi với ESP32</h2>
+        <div class="row w-100 h-100">
+            <div class="col-6 d-flex justify-content-center align-items-center flex-column">
+                <img src="https://thumbs.wokwi.com/projects/393256836523593729/social/1711586992926.png"
+                    class="img-fluid" alt="8 LED nhấp nháy">
+            </div>
+            <div class="col-6 d-flex flex-column justify-content-center text-left">
+                <pre>
+#include <\WiFi.h>
+const char* ssid = "your-SSID";
+const char* password = "your-PASSWORD";
+void setup() {
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) delay(1000);
+    Serial.println("Connected");
+}      
+void loop() {}
+            </pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-12">
+        <h2 class="h3 text-secondary mb-3">Lưu ý khi lập trình cho người mới bắt đầu</h2>
+        <div class="row w-100 h-100 overflow-y-auto">
+            <!-- Phần chữ -->
+            <div class="col-12 d-flex flex-column justify-content-center text-left">
+                <p class="text-muted">Lập trình cho vi điều khiển như ESP8266/ESP32 có thể khó khăn với người mới. Dưới
+                    đây
+                    là các lưu ý và lỗi phổ biến để bạn tránh:</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>1. Kiểm tra chân GPIO:</strong> Mỗi board có số lượng và chức
+                        năng
+                        chân khác nhau. Ví dụ, ESP8266 có 17 GPIO, nhưng một số chân như D0 (GPIO 16) không hỗ trợ ngắt
+                        (interrupt). Luôn xem sơ đồ chân (pinout) trước khi kết nối linh kiện, tránh làm hỏng board.
+                    </li>
+                    <li class="list-group-item"><strong>2. Quản lý bộ nhớ:</strong> ESP8266 chỉ có 64 KB RAM, dễ bị tràn
+                        nếu
+                        dùng biến lớn hoặc đệ quy sâu. Tránh khai báo mảng lớn (như int array[1000]) và không dùng
+                        String
+                        trong vòng lặp (dễ gây lỗi bộ nhớ). Thay bằng char array hoặc tối ưu code.</li>
+                    <li class="list-group-item"><strong>3. Debug với Serial Monitor:</strong> Luôn dùng
+                        Serial.begin(115200)
+                        trong setup() và Serial.println() để in thông tin debug (như giá trị biến, trạng thái). Nếu
+                        không
+                        thấy gì trên Serial Monitor, kiểm tra tốc độ baud rate (phải khớp với IDE) hoặc cáp USB.</li>
+                    <li class="list-group-item"><strong>4. Delay() gây treo chương trình:</strong> Dùng delay() (như
+                        delay(1000)) sẽ dừng toàn bộ chương trình, ảnh hưởng đến các tác vụ khác (như Wi-Fi). Với người
+                        mới,
+                        hãy thử dùng millis() để thay thế, ví dụ: if (millis() - lastTime > 1000) để không chặn code.
+                    </li>
+                    <li class="list-group-item"><strong>5. Lỗi kết nối Wi-Fi:</strong> Khi dùng ESP8266/ESP32, nếu Wi-Fi
+                        không kết nối (WiFi.status() != WL_CONNECTED), kiểm tra SSID/password đúng chưa, hoặc router có
+                        bật
+                        không. Thêm timeout để tránh treo: if (millis() > 10000) thì thoát.</li>
+                    <li class="list-group-item"><strong>6. Quên khai báo pinMode:</strong> Một lỗi phổ biến là quên
+                        pinMode(pin, OUTPUT) trong setup(), dẫn đến chân không hoạt động. Luôn khai báo pinMode() cho
+                        các
+                        chân điều khiển (INPUT/OUTPUT) trước khi dùng digitalWrite() hay digitalRead().</li>
+                    <li class="list-group-item"><strong>7. Không kiểm tra giá trị trả về:</strong> Các hàm như
+                        digitalRead()
+                        hay analogRead() có thể trả về giá trị không mong muốn nếu cảm biến lỗi. Luôn kiểm tra giá trị,
+                        ví
+                        dụ: if (digitalRead(pin) == HIGH) trước khi xử lý, tránh logic sai.</li>
+                    <li class="list-group-item"><strong>8. Lỗi cú pháp cơ bản:</strong> Đừng quên dấu chấm
+                        phẩy
+                        (;), đóng ngoặc ), hoặc khai báo biến sai. Đọc kỹ thông
+                        báo
+                        lỗi trong IDE, chúng thường chỉ rõ dòng lỗi.</li>
+                </ul>
+                <p class="text-muted mt-3">Lời khuyên: Bắt đầu với dự án nhỏ (như LED nhấp nháy), đọc kỹ tài liệu
+                    Arduino,
+                    và thử nghiệm trên Wokwi trước khi dùng phần cứng thực.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-13">
+        <h2 class="h3 text-secondary mb-3">Tài nguyên học tập</h2>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Arduino.cc: Tài liệu chính thức</li>
+            <li class="list-group-item">Wokwi.com: Mô phỏng miễn phí</li>
+            <li class="list-group-item">GitHub: Code mẫu ESP8266/ESP32</li>
+        </ul>
+    </div>
+
+    <div class="slide" id="slide-14">
+        <h2 class="h3 text-secondary mb-3">Kết luận và câu hỏi</h2>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">ESP8266/ESP32 là nền tảng IoT mạnh mẽ</li>
+            <li class="list-group-item">C++ và Wokwi giúp bạn bắt đầu dễ dàng</li>
+            <li class="list-group-item">Câu hỏi: Bạn muốn thử dự án nào?</li>
+        </ul>
+    </div>
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 14;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

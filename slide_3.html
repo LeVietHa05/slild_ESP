@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP8266, ESP32, C++ và Wokwi</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">BUTTON + INTERRUPT</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: Hiểu và sử dụng button + interrupt.</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+    <div class="slide" id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu về Button và Interrupt trong IoT</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Nút nhấn (Button) và ngắt (Interrupt) là hai khái niệm quan trọng trong lập
+                        trình
+                        vi điều khiển, đặc biệt trong các dự án IoT với ESP32, giúp xử lý tương tác người dùng và phản
+                        hồi
+                        thời gian thực.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Nút nhấn là gì?</strong> Nút nhấn là một linh kiện cơ bản,
+                            hoạt
+                            động như công tắc (thường hở hoặc thường đóng), dùng để gửi tín hiệu số (HIGH/LOW) tới vi
+                            điều
+                            khiển khi người dùng nhấn hoặc thả.</li>
+                        <li class="list-group-item"><strong>Ngắt là gì?</strong> Ngắt (Interrupt) là cơ chế cho phép vi
+                            điều
+                            khiển tạm dừng chương trình chính để xử lý một sự kiện ngay lập tức (như nhấn nút), thay vì
+                            phải
+                            kiểm tra liên tục (polling).</li>
+                        <li class="list-group-item"><strong>Vai trò trong IoT:</strong>
+                            - Nút nhấn: Tạo tương tác người dùng (bật/tắt thiết bị, thay đổi chế độ).
+                            - Ngắt: Phản hồi nhanh với sự kiện (nhấn nút, cảm biến), tiết kiệm tài nguyên CPU, phù hợp
+                            cho
+                            các ứng dụng thời gian thực.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong> Điều khiển đèn thông minh (nhấn nút
+                            để bật/tắt), hệ thống báo động (ngắt khi cảm biến phát hiện chuyển động), hoặc thay đổi
+                            trạng
+                            thái thiết bị (nhấn nút để chuyển chế độ).</li>
+                        <li class="list-group-item"><strong>Mục tiêu:</strong> Hiểu cách sử dụng nút nhấn
+                            và ngắt trên ESP32, từ lý thuyết đến thực hành, bao gồm cách kết nối, lập trình, và xử lý
+                            các
+                            vấn đề thường gặp.</li>
+                    </ul>
+                    <p class="text-muted mt-3"><strong>Lưu ý:</strong> ESP32 hỗ trợ ngắt trên hầu hết các chân GPIO,
+                        nhưng cần cẩn thận với các vấn đề như dội nút (button bounce) và quản lý tài nguyên trong hàm xử
+                        lý
+                        ngắt (ISR).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về nút nhấn (Button)</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Nút nhấn (Button) là linh kiện cơ bản trong các dự án điện tử, được dùng để
+                        gửi
+                        tín hiệu tới vi điều khiển khi người dùng tương tác.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cấu trúc nút nhấn:</strong> Nút nhấn thường là loại thường
+                            hở
+                            (Normally Open - NO), nghĩa là mạch chỉ đóng khi nhấn, hoặc thường đóng (Normally Closed -
+                            NC,
+                            mạch mở khi nhấn). Thường có 4 chân (2 cặp), nhưng chỉ dùng 2 chân đối diện để hoạt động.
+                        </li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong> Khi không nhấn, nút ở trạng thái
+                            HIGH
+                            (nếu dùng pull-up) hoặc LOW (nếu dùng pull-down). Khi nhấn, trạng thái đảo ngược, gửi tín
+                            hiệu
+                            tới GPIO của vi điều khiển.</li>
+                        <li class="list-group-item"><strong>Cách kết nối với vi điều khiển:</strong>
+                            - <strong>Pull-up:</strong> Kết nối một chân nút với GPIO, chân còn lại với GND. Dùng điện
+                            trở
+                            pull-up (10k ohm) hoặc pull-up nội của ESP32 (enable với INPUT_PULLUP).
+                            - <strong>Pull-down:</strong> Kết nối một chân với VCC, chân còn lại với GPIO qua điện trở
+                            pull-down (10k ohm).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý cơ bản:</strong>
+                            - Kiểm tra dội nút (button bounce) - tín hiệu nhiễu khi nhấn/thả, cần xử lý trong code.
+                            - Đảm bảo điện áp (3.3V trên ESP32) khớp với nút nhấn.
+                            - Tránh ngắn mạch khi kết nối sai chân.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Sử dụng GPIO không đặc biệt (như GPIO 0, 2) để
+                        tránh
+                        ảnh hưởng khi khởi động ESP32.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://static-or01.inbenta.com/0bfe64a092f505b97091e6212e44fb04ee34cc6ee2014546af3a4ac4a9a5951a/57326%20normally%20open%20and%20normally%20closed-NC%20NO.JPG"
+                        class="img-fluid" alt="Cấu trúc nút nhấn thường hở">
+                    <img src="https://espblockly.com/images/Pullup_bb1.jpg" class="img-fluid"
+                        alt="Kết nối pull-up với ESP32">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/04/led_button_esp32_bb.png?resize=828%2C550&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="Kết nối pull-down với ESP32">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">Hướng dẫn chống dội nút cho nút nhấn</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Dội nút (button bounce) là hiện tượng không thể tránh khi làm việc với nút
+                        nhấn,
+                        và cần được xử lý để đảm bảo tín hiệu chính xác.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Hiện tượng dội nút là gì?</strong> Khi nhấn hoặc thả nút,
+                            tiếp
+                            điểm cơ học dao động nhanh, tạo ra nhiều tín hiệu HIGH/LOW không mong muốn trong vài mili
+                            giây
+                            (thường 5-50ms), khiến vi điều khiển hiểu nhầm thành nhiều lần nhấn.</li>
+                        <li class="list-group-item"><strong>Ảnh hưởng:</strong> Dẫn đến sai logic, ví dụ: nhấn nút 1 lần
+                            nhưng code ghi nhận 3-4 lần, gây lỗi khi điều khiển thiết bị (như bật/tắt LED nhiều lần).
+                        </li>
+                        <li class="list-group-item"><strong>Phương pháp chống dội:</strong>
+                            - <strong>Phần cứng:</strong> Thêm tụ điện (10uF) song song với nút nhấn, hoặc dùng mạch RC
+                            (điện trở + tụ) để lọc tín hiệu.
+                            - <strong>Phần mềm:</strong> Bỏ qua tín hiệu trong một khoảng thời gian sau lần nhấn đầu
+                            tiên
+                            (dùng delay hoặc millis()).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> Phương pháp phần mềm phổ biến hơn vì không
+                            cần
+                            thêm linh kiện. Trên ESP32, tránh dùng delay() trong hàm ngắt (ISR), thay bằng millis() để
+                            không
+                            chặn chương trình.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Ví dụ code: Chống dội nút phần mềm trên ESP32</h4>
+                    <pre>
+const int buttonPin = 15; // Chân nút nhấn
+const int ledPin = 2; // Chân LED
+int ledState = LOW;
+int lastButtonState = HIGH; // Trạng thái trước đó
+unsigned long lastDebounceTime = 0;
+const unsigned long debounceDelay = 50; // Thời gian chống dội (ms)
+
+void setup() {
+    pinMode(buttonPin, INPUT_PULLUP); // Kéo lên nội (internal pull-up)
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, ledState);
+}
+
+void loop() {
+    int reading = digitalRead(buttonPin);
+    if (reading != lastButtonState) {
+        lastDebounceTime = millis(); // Đặt lại thời gian
+    }
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        if (reading == LOW) { // Nhấn nút (LOW vì pull-up)
+        ledState = !ledState; // Đổi trạng thái LED
+        digitalWrite(ledPin, ledState);
+        }
+    }
+    lastButtonState = reading;
+}
+                  </pre>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong> Điều chỉnh <code>debounceDelay</code> (50ms thường
+                        đủ). Dùng Serial Monitor để debug trạng thái nút nếu cần.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://fastbitlab.com/wp-content/uploads/2022/02/Figure-6-1.png" class="img-fluid"
+                        alt="Sơ đồ dội nút (button bounce)">
+                    <img src="https://dksmart.vn/img/baiviet_upload/baiviet_76/20220501111523_chong%20nhieu%20nut%20nhan.jpg"
+                        class="img-fluid" alt="Mạch chống dội phần cứng (RC)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu phương pháp Polling và Ngắt</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Phương pháp Polling</h4>
+                    <p class="text-muted">Polling là phương pháp mà vi điều khiển liên tục kiểm tra trạng thái của nút
+                        nhấn
+                        hoặc thiết bị trong vòng lặp chính (loop()).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong> Dùng lệnh như digitalRead() để kiểm
+                            tra
+                            GPIO của nút nhấn nhiều lần trong một chu kỳ.</li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong> Đơn giản, dễ lập trình, không yêu cầu cấu
+                            hình
+                            phức tạp.</li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong> Tiêu tốn tài nguyên CPU, không hiệu quả
+                            khi
+                            xử lý nhiều thiết bị hoặc cần phản hồi nhanh, có thể bỏ sót sự kiện nếu tần suất kiểm tra
+                            thấp.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Phần nội dung bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Phương pháp Ngắt</h4>
+                    <p class="text-muted">Ngắt là phương pháp mà vi điều khiển tạm dừng chương trình chính để xử lý sự
+                        kiện
+                        (như nhấn nút) ngay khi nó xảy ra.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong> Khi sự kiện được phát hiện (nhấn
+                            nút),
+                            vi điều khiển gọi hàm xử lý ngắt (ISR) để phản hồi.</li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong> Phản hồi thời gian thực, tiết kiệm tài
+                            nguyên
+                            CPU, phù hợp cho nhiều thiết bị hoặc ứng dụng nhạy thời gian.</li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong> Yêu cầu cấu hình phức tạp hơn, cần xử
+                            lý
+                            cẩn thận trong ISR để tránh lỗi (như dội nút).</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Phần ảnh (placeholder, không sử dụng vì không có code) -->
+            <div class="col-6 overflow-auto" style="max-height: 400px; display: none;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="URL_HINH_ANH_1" class="img-fluid" alt="Minh họa Polling">
+                    <img src="URL_HINH_ANH_2" class="img-fluid" alt="Minh họa Ngắt">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Code minh họa Polling và Ngắt</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn (Code Polling) -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Code Polling</h4>
+                    <p class="text-muted">Ví dụ code sử dụng polling để đọc trạng thái nút nhấn và điều khiển LED:</p>
+                    <pre>
+const int buttonPin = 15; // Chân nút nhấn
+const int ledPin = 2;    // Chân LED
+int lastState = HIGH;
+
+void setup() {
+    pinMode(buttonPin, INPUT_PULLUP);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW);
+}
+
+void loop() {
+    int reading = digitalRead(buttonPin);
+    if (reading != lastState) {
+        if (reading == LOW) { // Nhấn nút
+        digitalWrite(ledPin, !digitalRead(ledPin)); // Đổi trạng thái LED
+        }
+        lastState = reading;
+    }
+    delay(50); // Giảm tần suất kiểm tra
+}
+                  </pre>
+                </div>
+            </div>
+            <!-- Phần nội dung bên phải với khả năng cuộn (Code Ngắt) -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mb-2">Code Ngắt</h4>
+                    <p class="text-muted">Ví dụ code sử dụng ngắt để phát hiện nhấn nút và điều khiển LED:</p>
+                    <pre>
+const int buttonPin = 15; // Chân nút nhấn
+const int ledPin = 2;    // Chân LED
+volatile int ledState = LOW;
+
+void IRAM_ATTR buttonISR() { // Hàm ngắt
+    ledState = !ledState;     // Đổi trạng thái LED
+    digitalWrite(ledPin, ledState);
+}
+
+void setup() {
+    pinMode(buttonPin, INPUT_PULLUP);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, ledState);
+    attachInterrupt(digitalPinToInterrupt(buttonPin), buttonISR, FALLING);
+}
+
+void loop() {
+    // Không cần kiểm tra liên tục
+}
+                  </pre>
+                </div>
+                <p class="text-muted mt-2"><strong>Nghiên cứu thêm:</strong> Thử debounce xem nó thú vị như nào.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Sử dụng ngắt trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">ESP32 hỗ trợ ngắt phần cứng trên hầu hết các chân GPIO, cho phép xử lý sự kiện
+                        thời gian thực một cách hiệu quả. Dưới đây là hướng dẫn chi tiết:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Các chân hỗ trợ ngắt:</strong> Hầu hết 36 GPIO của ESP32
+                            (trừ
+                            một số chân đặc biệt như GPIO 6-11 dùng cho Flash) đều hỗ trợ ngắt. Tuy nhiên, chỉ một số
+                            chân
+                            có ngắt cấp RTC (dùng trong Deep Sleep), ví dụ: GPIO 34-39 (không pull-up/pull-down nội).
+                        </li>
+                        <li class="list-group-item"><strong>Chế độ ngắt:<br /></strong>
+                            - <strong>RISING:</strong> Phát hiện khi tín hiệu từ LOW lên HIGH (thả nút nếu dùng
+                            pull-down).<br />
+                            - <strong>FALLING:</strong> Phát hiện khi tín hiệu từ HIGH xuống LOW (nhấn nút nếu dùng
+                            pull-up).<br />
+                            - <strong>CHANGE:</strong> Phát hiện cả hai cạnh (RISING và FALLING).<br />
+                            - Chọn chế độ phù hợp với ứng dụng (ví dụ: FALLING cho nút nhấn pull-up).
+                        </li>
+                        <li class="list-group-item"><strong>Cách thiết lập ngắt:</strong><br />
+                            - Dùng hàm <code>attachInterrupt(digitalPinToInterrupt(pin), ISR, mode)</code>.<br />
+                            - <code>digitalPinToInterrupt(pin)</code>: Chuyển đổi chân GPIO thành số ngắt (trên ESP32,
+                            hầu
+                            hết GPIO tương ứng trực tiếp).<br />
+                            - <code>ISR</code>: Hàm xử lý ngắt (phải khai báo với thuộc tính IRAM_ATTR để chạy trong
+                            RAM).<br />
+                            - <code>mode</code>: Chọn RISING, FALLING, hoặc CHANGE.
+                        </li>
+                        <li class="list-group-item"><strong>Cấu hình ngắt:</strong><br />
+                            - Khai báo biến toàn cục (volatile) để chia sẻ giữa loop() và ISR.<br />
+                            - Tránh dùng delay() hoặc hàm phức tạp trong ISR (chỉ thực hiện công việc nhanh như đổi
+                            trạng thái).<br />
+                            - Dùng semaphore hoặc flag (cờ) để thông báo từ ISR đến loop().
+                        </li>
+                        <li class="list-group-item"><strong>Giới hạn và quản lý ngắt:</strong><br />
+                            - ESP32 có 2 lõi (Core 0 và Core 1), ngắt mặc định chạy trên Core 0. Có thể gán ngắt cho lõi
+                            cụ thể bằng <code>xTaskCreatePinnedToCore()</code>.<br />
+                            - Ngắt có thể bị vô hiệu hóa trong Deep Sleep, chỉ dùng GPIO RTC nếu cần ngắt trong chế độ
+                            này.<br />
+                            - Số ngắt tối đa phụ thuộc vào ứng dụng, nhưng tránh quá nhiều ngắt cùng lúc để không gây
+                            xung đột.
+                        </li>
+                        <li class="list-group-item"><strong>Ví dụ thực tế:</strong> Sử dụng ngắt để phát hiện nhấn nút,
+                            bật/tắt LED, và xử lý chống dội trong ISR:<br />
+                            - Kết nối nút với GPIO 15 (pull-up nội), LED với GPIO 2.<br />
+                            - Dùng FALLING để phát hiện nhấn, đổi trạng thái LED trong ISR.<br />
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Ví dụ code chi tiết:</h4>
+                    <pre>
+volatile int ledState = LOW; // Biến toàn cục
+const int buttonPin = 15;   // Chân nút nhấn
+const int ledPin = 2;       // Chân LED
+
+void IRAM_ATTR buttonISR() { // Hàm ngắt
+    static unsigned long lastInterruptTime = 0;
+    unsigned long interruptTime = millis();
+    if (interruptTime - lastInterruptTime > 50) { // Chống dội
+        ledState = !ledState; // Đổi trạng thái LED
+        digitalWrite(ledPin, ledState);
+        lastInterruptTime = interruptTime;
+    }
+}
+
+void setup() {
+    pinMode(buttonPin, INPUT_PULLUP);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, ledState);
+    attachInterrupt(digitalPinToInterrupt(buttonPin), buttonISR, FALLING);
+}
+
+void loop() {
+    // Xử lý khác nếu cần
+}
+                    </pre>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong>
+                        Kiểm tra trạng thái ngắt bằng Serial Monitor nếu gặp lỗi. Tránh gọi hàm phức tạp trong ISR để
+                        không làm treo ESP32.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Thực hành: Sử dụng ngắt để bật/tắt 3 LED</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Bài tập này yêu cầu sử dụng ngắt để điều khiển 3 LED bằng 3 nút nhấn trên
+                        ESP32.
+                        <br />Mỗi nút nhấn sẽ bật/tắt một LED tương ứng.
+                    </p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Mục tiêu:</strong> <br />Sử dụng ngắt để phát hiện nhấn nút
+                            và
+                            điều khiển trạng thái (bật/tắt) của 3 LED. <br />Mỗi nút điều khiển một LED độc lập.</li>
+                        <li class="list-group-item"><strong>Kết nối:</strong> <br />
+                            - Nút 1 (GPIO 15), LED 1 (GPIO 2). <br />
+                            - Nút 2 (GPIO 4), LED 2 (GPIO 16). <br />
+                            - Nút 3 (GPIO 5), LED 3 (GPIO 17). <br />
+                            Sử dụng pull-up nội của ESP32 (INPUT_PULLUP) cho các nút.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong> <br />
+                            - Xử lý chống dội nút trong ISR để tránh tín hiệu nhiễu. <br />
+                            - Tránh dùng chân GPIO đặc biệt (như GPIO 0, 2) khi khởi động. <br />
+                            - Đảm bảo LED có điện trở hạn dòng (220-330 ohm) để không làm hỏng ESP32.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Sử dụng ngắt để điều khiển 3 LED</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+const int buttonPin1 = 15; // Nút 1
+const int buttonPin2 = 4;  // Nút 2
+const int buttonPin3 = 5;  // Nút 3
+const int ledPin1 = 2;     // LED 1
+const int ledPin2 = 16;    // LED 2
+const int ledPin3 = 17;    // LED 3
+
+volatile int ledState1 = LOW;
+volatile int ledState2 = LOW;
+volatile int ledState3 = LOW;
+
+void IRAM_ATTR buttonISR1() {
+    static unsigned long lastInterruptTime = 0;
+    unsigned long interruptTime = millis();
+    if (interruptTime - lastInterruptTime > 50) { // Chống dội
+        ledState1 = !ledState1;
+        digitalWrite(ledPin1, ledState1);
+        lastInterruptTime = interruptTime;
+    }
+}
+
+void IRAM_ATTR buttonISR2() {
+    static unsigned long lastInterruptTime = 0;
+    unsigned long interruptTime = millis();
+    if (interruptTime - lastInterruptTime > 50) {
+        ledState2 = !ledState2;
+        digitalWrite(ledPin2, ledState2);
+        lastInterruptTime = interruptTime;
+    }
+}
+
+void IRAM_ATTR buttonISR3() {
+    static unsigned long lastInterruptTime = 0;
+    unsigned long interruptTime = millis();
+    if (interruptTime - lastInterruptTime > 50) {
+        ledState3 = !ledState3;
+        digitalWrite(ledPin3, ledState3);
+        lastInterruptTime = interruptTime;
+    }
+}
+
+void setup() {
+    pinMode(buttonPin1, INPUT_PULLUP);
+    pinMode(buttonPin2, INPUT_PULLUP);
+    pinMode(buttonPin3, INPUT_PULLUP);
+    pinMode(ledPin1, OUTPUT);
+    pinMode(ledPin2, OUTPUT);
+    pinMode(ledPin3, OUTPUT);
+    digitalWrite(ledPin1, ledState1);
+    digitalWrite(ledPin2, ledState2);
+    digitalWrite(ledPin3, ledState3);
+    attachInterrupt(digitalPinToInterrupt(buttonPin1), buttonISR1, FALLING);
+    attachInterrupt(digitalPinToInterrupt(buttonPin2), buttonISR2, FALLING);
+    attachInterrupt(digitalPinToInterrupt(buttonPin3), buttonISR3, FALLING);
+}
+
+void loop() {
+    delay(10000); // Delay 10 giây để demo
+}
+                        </pre>
+                    </div>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="Screenshot 2025-05-13 171826.png" class="img-fluid"
+                        alt="Sơ đồ kết nối 3 nút và 3 LED với ESP32">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">Lưu ý khi sử dụng và bài tập về nhà</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class=" overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mt-3 mb-2">Lưu ý khi sử dụng</h4>
+                    <p class="text-muted">Khi làm việc với nút nhấn và ngắt trên ESP32, cần chú ý các vấn đề sau:<br />
+                    </p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Dội nút (Button Bounce):</strong><br />Tín hiệu nhiễu khi
+                            nhấn/thả nút có thể gây lỗi. <br />Giải pháp: Dùng chống dội phần mềm (millis()) hoặc phần
+                            cứng
+                            (tụ điện 10uF).</li>
+                        <li class="list-group-item"><strong>Xung đột ISR:</strong><br />Nếu nhiều ngắt xảy ra cùng lúc,
+                            có
+                            thể làm treo ESP32. <br />Giải pháp: Giới hạn logic trong ISR, dùng flag để xử lý trong
+                            loop().
+                        </li>
+                        <li class="list-group-item"><strong>Quản lý lõi:</strong><br />ESP32 có 2 lõi, ngắt mặc định
+                            chạy
+                            trên Core 0. <br />Giải pháp: Gán ngắt cho lõi cụ thể bằng xTaskCreatePinnedToCore() nếu
+                            cần.
+                        </li>
+                        <li class="list-group-item"><strong>Giới hạn Deep Sleep:</strong><br />Ngắt thường bị vô hiệu
+                            trong
+                            Deep Sleep, chỉ dùng GPIO RTC (34-39). <br />Giải pháp: Kiểm tra tài liệu ESP32 để cấu hình
+                            ngắt
+                            phù hợp.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Bài tập về nhà</h4>
+                    <p class="text-muted">Tạo dự án kết hợp nút nhấn, LED, và LCD trên ESP32:<br /></p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Yêu cầu:</strong><br />Sử dụng 2 nút nhấn với ngắt để
+                            bật/tắt 2
+                            LED. <br />Hiển thị trạng thái LED (bật/tắt) trên LCD 16x2 I2C.</li>
+                        <li class="list-group-item"><strong>Kết nối gợi ý:</strong><br />
+                            - Nút 1 (GPIO 15), LED 1 (GPIO 2).<br />
+                            - Nút 2 (GPIO 4), LED 2 (GPIO 16).<br />
+                            - LCD: SDA (GPIO 21), SCL (GPIO 22).
+                        </li>
+                        <li class="list-group-item"><strong>Thời hạn:</strong><br />Hoàn thành và nộp bài trước buổi sau.<br />Nộp qua link Wokwi hoặc video demo.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code gợi ý:</h4>
+                    <button class="btn btn-primary" type="butto n" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+const int buttonPin1 = 15; // Nút 1
+const int buttonPin2 = 4;  // Nút 2
+const int ledPin1 = 2;     // LED 1
+const int ledPin2 = 16;    // LED 2
+volatile int ledState1 = LOW;
+volatile int ledState2 = LOW;
+
+void IRAM_ATTR buttonISR1() {
+    static unsigned long lastInterruptTime = 0;
+    if (millis() - lastInterruptTime > 50) {
+        ledState1 = !ledState1;
+        lastInterruptTime = millis();
+    }
+}
+
+void IRAM_ATTR buttonISR2() {
+    static unsigned long lastInterruptTime = 0;
+    if (millis() - lastInterruptTime > 50) {
+        ledState2 = !ledState2;
+        lastInterruptTime = millis();
+    }
+}
+
+void setup() {
+    pinMode(buttonPin1, INPUT_PULLUP);
+    pinMode(buttonPin2, INPUT_PULLUP);
+    pinMode(ledPin1, OUTPUT);
+    pinMode(ledPin2, OUTPUT);
+    attachInterrupt(digitalPinToInterrupt(buttonPin1), buttonISR1, FALLING);
+    attachInterrupt(digitalPinToInterrupt(buttonPin2), buttonISR2, FALLING);
+    // Khởi tạo LCD (giả định LiquidCrystal_I2C đã cài)
+    lcd.begin(0x27, 16, 2);
+    lcd.backlight();
+}
+
+void loop() {
+// Cập nhật LCD với trạng thái LED (giả định)
+    lcd.setCursor(0, 0);
+    lcd.print("LED1: ");
+    lcd.print(ledState1 ? "ON" : "OFF");
+    lcd.setCursor(0, 1);
+    lcd.print("LED2: ");
+    lcd.print(ledState2 ? "ON" : "OFF");
+}
+                    </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 9;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
