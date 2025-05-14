@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP8266, ESP32, C++ và Wokwi</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+
+
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">Giới thiệu về giao thức truyền tin trong IoT</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: Hiểu và sử dụng giao thức truyền tin</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+
+    <div class="slide " id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu về giao thức truyền tin trong IoT</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Trong các dự án IoT, giao thức truyền tin giúp các thiết bị "nói chuyện" với
+                        nhau,
+                        ví dụ như ESP32 giao tiếp với cảm biến hoặc màn hình.<br />Bài thuyết trình này sẽ giới thiệu 3
+                        giao
+                        thức phổ biến: UART, SPI, và I2C.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Giao thức truyền tin là gì?</strong><br />Là các quy tắc để
+                            thiết bị gửi và nhận dữ liệu, giống như cách ta nhắn tin với ta bè nhưng giữa các linh
+                            kiện
+                            điện tử.</li>
+                        <li class="list-group-item"><strong>Tầm quan trọng trong IoT:</strong><br />Giúp ESP32 đọc dữ
+                            liệu
+                            từ cảm biến (như nhiệt độ), gửi lệnh đến thiết bị (như LED), hoặc hiển thị thông tin lên màn
+                            hình LCD.</li>
+                        <li class="list-group-item"><strong>3 giao thức chính trên ESP32:</strong><br />
+                            - UART: Truyền tin nối tiếp, dùng để debug qua Serial Monitor (như ta đã thấy ở bài trước
+                            với
+                            Serial.println()).<br />
+                            - SPI: Truyền nhanh, dùng với LED Matrix (MAX7219) ở bài trước.<br />
+                            - I2C: Truyền qua 2 dây, dùng với LCD 16x2 (qua Wire.h) ở bài trước.
+                        </li>
+                        <li class="list-group-item"><strong>Mục tiêu bài:</strong><br />Hiểu cách hoạt động
+                            của UART, SPI, I2C, biết cách dùng chúng trên ESP32, và áp dụng vào các dự án thực tế.</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo:</strong><br />Bắt đầu với UART vì nó đơn giản
+                        nhất, sau đó thử SPI và I2C khi đã quen.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsWWAfNvOyWuNOxCRh7EXxHy76DHwwXUY1uA&s"
+                        class="img-fluid" alt="ESP32 giao tiếp với cảm biến qua giao thức">
+                    <img src="https://www.pcb-hero.com/cdn/shop/articles/uart-spi-i2c_1024x1024.png?v=1712204239"
+                        class="img-fluid" alt="Ví dụ thiết bị IoT">
+                    <img src="https://ae01.alicdn.com/kf/Seb63dce1e45545f7b873246af579b1736.jpg_640x640q90.jpg"
+                        class="img-fluid" alt="Sơ đồ truyền tin UART, SPI, I2C">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về giao thức UART</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">UART là giao thức truyền tin nối tiếp đơn giản, giúp ESP32 gửi và nhận dữ liệu
+                        mà
+                        không cần tín hiệu đồng hồ (asynchronous).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>UART là gì?</strong><br />UART (Universal Asynchronous
+                            Receiver/Transmitter) là cách truyền dữ liệu qua 2 dây: TX (truyền) và RX (nhận).<br />Ví
+                            dụ: ESP32 gửi "Hello" qua TX, máy tính nhận qua RX để hiển thị trên Serial Monitor.</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Dữ liệu được gửi từng bit, theo tốc độ baud rate (như 115200 bits/giây).<br />
+                            - Cả hai thiết bị phải có cùng tốc độ baud để hiểu nhau.<br />
+                            - Không cần đồng hồ, nhưng có bit start/stop để đồng bộ.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Đơn giản, dễ lập trình (ta đã dùng Serial.begin() ở bài trước để debug).<br />
+                            - Chỉ cần 2 dây, tiết kiệm chân GPIO.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Tốc độ chậm hơn SPI/I2C.<br />
+                            - Chỉ giao tiếp 1-1 (không hỗ trợ nhiều thiết bị cùng lúc).
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Debug qua Serial Monitor (như in giá trị nhiệt độ ở bài trước).<br />
+                            - Giao tiếp với module GPS, Bluetooth (HC-05).
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Luôn kiểm tra tốc độ baud rate
+                        trong
+                        code và phần mềm (như Arduino IDE) để tránh lỗi.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://lastminuteengineers.com/wp-content/uploads/iot/ESP32-UART-Pins.png"
+                        class="img-fluid" alt="Sơ đồ truyền tin UART">
+                    <img src="https://dientutuonglai.com/uploads/media/arduino/giao-tiep-uart-giua-2-arduino-1.png?1615518866975"
+                        class="img-fluid" alt="ESP32 với Serial Monitor">
+                    <img src="https://www.makerguides.com/wp-content/uploads/2023/06/Complete-the-hardware-connections-4-1024x644.jpg"
+                        class="img-fluid" alt="Module Bluetooth HC-05 dùng UART">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">Sử dụng UART trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">ESP32 có 3 cổng UART (UART0, UART1, UART2), ta có thể dùng để giao tiếp với
+                        máy
+                        tính hoặc thiết bị khác.<br />Ở đây, ta sẽ thử với UART0 (mặc định) để gửi/nhận dữ liệu.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Các chân UART trên ESP32:</strong><br />
+                            - UART0: TX (GPIO 1), RX (GPIO 3) - Dùng cho Serial Monitor (ta đã dùng ở bài trước).<br />
+                            - UART1: TX (GPIO 10), RX (GPIO 9) - Thường dùng cho Flash, tránh dùng.<br />
+                            - UART2: TX (GPIO 17), RX (GPIO 16) - Dùng cho thiết bị ngoài.
+                        </li>
+                        <li class="list-group-item"><strong>Cấu hình UART:</strong><br />
+                            - Dùng <code>Serial.begin(baudRate)</code> để khởi động UART0.<br />
+                            - Dùng <code>Serial2.begin(baudRate)</code> cho UART2.<br />
+                            - Baud rate phổ biến: 9600, 115200 (phải khớp với phần mềm).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - UART0 dùng cho debug, không nên kết nối thiết bị khác vào GPIO 1, 3.<br />
+                            - Kiểm tra tốc độ baud rate nếu không nhận được dữ liệu.<br />
+                            - Tránh dùng delay() dài trong loop() để không bỏ lỡ dữ liệu.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Gửi và nhận dữ liệu qua UART0</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+void setup() {
+    Serial.begin(115200); // Khởi động UART0
+}
+
+void loop() {
+    // Gửi dữ liệu
+    Serial.println("Hello from ESP32!");
+    delay(1000);
+
+    // Nhận dữ liệu
+    if (Serial.available()) { // Nếu có dữ liệu từ Serial Monitor
+        String data = Serial.readString(); // Đọc dữ liệu
+        Serial.print("You sent: ");
+        Serial.println(data);
+    }
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Mở Serial Monitor (Ctrl+Shift+M
+                        trên
+                        Arduino IDE), chọn baud rate 115200, gõ và gửi dữ liệu để thử.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://lastminuteengineers.com/wp-content/uploads/iot/ESP32-UART-Pins.png"
+                        class="img-fluid" alt="Sơ đồ truyền tin UART">
+                    <img src="Screenshot 2025-05-13 183006.png" class="img-fluid" alt="ESP32 với Serial Monitor">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về giao thức SPI</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">SPI là giao thức truyền tin tốc độ cao, thường dùng để giao tiếp với các thiết
+                        bị
+                        như LED Matrix (ta đã dùng ở bài trước).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>SPI là gì?</strong><br />SPI (Serial Peripheral Interface)
+                            là
+                            giao thức truyền tin đồng bộ, sử dụng 4 dây: MOSI (Master Out Slave In), MISO (Master In
+                            Slave
+                            Out), SCLK (đồng hồ), CS (Chip Select).</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Một thiết bị chính (Master - ESP32) điều khiển nhiều thiết bị phụ (Slave).<br />
+                            - Dữ liệu được truyền đồng bộ qua SCLK (đồng hồ), tốc độ lên đến 80 MHz trên ESP32.<br />
+                            - CS chọn thiết bị Slave để giao tiếp.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Tốc độ cao, phù hợp cho thiết bị cần truyền nhanh (như LED Matrix MAX7219 ở bài
+                            trước).<br />
+                            - Hỗ trợ nhiều thiết bị (dùng nhiều chân CS).
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Cần nhiều dây hơn UART (4 dây).<br />
+                            - Không hỗ trợ truyền xa (dây ngắn, dưới 1m).
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Giao tiếp với LED Matrix (MAX7219, ta đã dùng ở bài trước).<br />
+                            - Cảm biến tốc độ cao, thẻ SD, màn hình TFT.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Luôn kiểm tra chân CS đúng với
+                        thiết
+                        bị Slave để tránh xung đột.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://www.iotzone.vn/wp-content/uploads/2024/03/esp32-spi-cach-ket-noi-nhieu-ngoai-vi-spi-voi-esp32.jpg"
+                        class="img-fluid" alt="Sơ đồ truyền tin SPI">
+                    <img src="https://thumbs.wokwi.com/projects/327361970806194770/social/1648455553652.png"
+                        class="img-fluid" alt="ESP32 với LED Matrix qua SPI">
+                    <img src="https://thumbs.wokwi.com/projects/394941810212495361/social/1712906140940.png"
+                        class="img-fluid" alt="Cảm biến dùng SPI">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Sử dụng SPI trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">ESP32 hỗ trợ 2 cổng SPI (VSPI và HSPI), ta có thể dùng để giao tiếp với thiết
+                        bị như LED Matrix (MAX7219, ta đã dùng ở bài trước).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Các chân SPI trên ESP32:</strong><br />
+                            - VSPI: MOSI (GPIO 23), MISO (GPIO 19), SCLK (GPIO 18), CS (GPIO 5).<br />
+                            - HSPI: MOSI (GPIO 13), MISO (GPIO 12), SCLK (GPIO 14), CS (GPIO 15).<br />
+                            - Ta đã dùng VSPI với LED Matrix (MAX7219) ở bài trước.
+                        </li>
+                        <li class="list-group-item"><strong>Cấu hình SPI:</strong><br />
+                            - Dùng thư viện <code>SPI.h</code> (có sẵn trong Arduino IDE).<br />
+                            - Khởi động SPI bằng <code>SPI.begin()</code>.<br />
+                            - Dùng chân CS để chọn thiết bị (ví dụ: GPIO 5).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Kiểm tra chân SPI khớp với thiết bị (MOSI, MISO, SCLK, CS).<br />
+                            - Đặt tốc độ SPI phù hợp (thường 1 MHz, điều chỉnh nếu cần).<br />
+                            - Tránh xung đột chân nếu dùng nhiều thiết bị.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Gửi dữ liệu đến LED Matrix qua SPI</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\SPI.h>
+#include <\LedControl.h>
+
+LedControl lc = LedControl(23, 18, 5, 1); // DIN (MOSI), CLK, CS
+
+void setup() {
+    SPI.begin(); // Khởi động SPI
+    lc.shutdown(0, false);
+    lc.setIntensity(0, 8);
+    lc.clearDisplay(0);
+    // Hiển thị ký tự "A"
+    byte a[8] = {0x18, 0x24, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x42};
+    for (int i = 0; i < 8; i++) {
+        lc.setRow(0, i, a[i]);
+    }
+}
+
+void loop() {
+// Có thể thêm hiệu ứng
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử với LED Matrix trước, sau đó
+                        thử các thiết bị khác như cảm biến SPI.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://thumbs.wokwi.com/projects/429955431711548417/social/1746296302407.png"
+                        class="img-fluid" alt="ESP32 với LED Matrix qua SPI">
+                    <img src="https://thumbs.wokwi.com/projects/394941810212495361/social/1712906140940.png"
+                        class="img-fluid" alt="loadcell using spi with esp32">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về giao thức I2C</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">I2C là giao thức truyền tin tiết kiệm chân, ta đã dùng nó với LCD 16x2 ở bài
+                        trước.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>I2C là gì?</strong><br />I2C (Inter-Integrated Circuit) là
+                            giao
+                            thức truyền tin đồng bộ, sử dụng 2 dây: SDA (dữ liệu) và SCL (đồng hồ).</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Một thiết bị chính (Master - ESP32) điều khiển nhiều thiết bị phụ (Slave).<br />
+                            - Mỗi Slave có địa chỉ riêng (ví dụ: LCD thường là 0x27).<br />
+                            - Dữ liệu được truyền qua SDA, đồng bộ bằng SCL.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Chỉ dùng 2 dây, tiết kiệm GPIO (như với LCD ở bài trước).<br />
+                            - Hỗ trợ nhiều thiết bị (lên đến 127 thiết bị trên cùng bus).
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Tốc độ chậm hơn SPI (thường 100 kHz hoặc 400 kHz).<br />
+                            - Có thể xung đột nếu nhiều thiết bị dùng cùng địa chỉ.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Giao tiếp với LCD 16x2 (qua Wire.h, ta đã dùng ở bài trước).<br />
+                            - Cảm biến (như MPU6050), module thời gian thực (RTC).
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Luôn kiểm tra địa chỉ I2C của
+                        thiết
+                        bị bằng code I2C Scanner trước khi dùng.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://microcontrollerslab.com/wp-content/uploads/2021/04/ESP32-I2C-Pins.jpg"
+                        class="img-fluid" alt="Sơ đồ truyền tin I2C">
+                    <img src="https://thumbs.wokwi.com/projects/397279925063786497/social/1715134847707.png"
+                        class="img-fluid" alt="ESP32 với LCD qua I2C">
+                    <img src="https://thumbs.wokwi.com/projects/384474225375726593/social/1703198696212.png"
+                        class="img-fluid" alt="Cảm biến MPU6050 dùng I2C">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Sử dụng I2C trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">ESP32 hỗ trợ 2 cổng I2C, ta đã dùng I2C với LCD 16x2 ở bài trước để hiển thị
+                        dữ liệu.<br />Ở đây, ta sẽ thử với LCD lần nữa để ôn tập.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Các chân I2C trên ESP32:</strong><br />
+                            - I2C0: SDA (GPIO 21), SCL (GPIO 22) - Mặc định, ta đã dùng với LCD.<br />
+                            - I2C1: SDA (GPIO 25), SCL (GPIO 26) - Có thể tùy chỉnh.<br />
+                            - Cần điện trở pull-up (4.7k ohm) nếu tín hiệu không ổn định.
+                        </li>
+                        <li class="list-group-item"><strong>Cấu hình I2C:</strong><br />
+                            - Dùng thư viện <code>Wire.h</code> (có sẵn trong Arduino IDE).<br />
+                            - Khởi động I2C bằng <code>Wire.begin(SDA, SCL)</code>.<br />
+                            - Kiểm tra địa chỉ I2C của thiết bị (như LCD, thường là 0x27).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Kiểm tra địa chỉ I2C bằng I2C Scanner nếu LCD không hoạt động.<br />
+                            - Tránh xung đột địa chỉ khi dùng nhiều thiết bị I2C.<br />
+                            - Đảm bảo nguồn 5V ổn định cho LCD.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Hiển thị "Hello, ESP32!" trên LCD qua I2C</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\ire.h>
+#include <\LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+    Wire.begin(21, 22); // SDA, SCL
+    lcd.init();
+    lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Hello, ESP32!");
+    lcd.setCursor(0, 1);
+    lcd.print("I2C Demo");
+}
+
+void loop() {
+// Có thể thêm hiệu ứng
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Nếu LCD không hiển thị, kiểm tra
+                        địa chỉ I2C và điều chỉnh độ tương phản trên mô-đun I2C.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://www.makerguides.com/wp-content/uploads/2023/04/ESP32-Wroom-DevKit-Full-Pinout-1024x499.jpg"
+                        class="img-fluid" alt="Sơ đồ chân I2C trên ESP32">
+                    <img src="https://embarcados.com.br/wp-content/uploads/2022/04/wokwi-850x510.png" class="img-fluid"
+                        alt="ESP32 với LCD qua I2C">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">So sánh UART, SPI, và I2C</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Hiểu rõ sự khác biệt giữa UART, SPI, và I2C sẽ giúp ta chọn giao thức phù hợp
+                        cho
+                        dự án.<br />Dưới đây là bảng so sánh:</p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tiêu chí</th>
+                                <th>UART</th>
+                                <th>SPI</th>
+                                <th>I2C</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Số dây</strong></td>
+                                <td>2 (TX, RX)</td>
+                                <td>4 (MOSI, MISO, SCLK, CS)</td>
+                                <td>2 (SDA, SCL)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tốc độ</strong></td>
+                                <td>Chậm (lên đến 115200 bps)</td>
+                                <td>Nhanh (lên đến 80 MHz trên ESP32)</td>
+                                <td>Trung bình (100 kHz - 400 kHz)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Số thiết bị</strong></td>
+                                <td>1-1 (1 Master, 1 Slave)</td>
+                                <td>1 Master, nhiều Slave (qua CS)</td>
+                                <td>1 Master, nhiều Slave (lên đến 127)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ứng dụng</strong></td>
+                                <td>Debug qua Serial Monitor<br />(bài trước: in nhiệt độ)</td>
+                                <td>LED Matrix, cảm biến tốc độ cao<br />(bài trước: MAX7219)</td>
+                                <td>LCD, cảm biến<br />(bài trước: LCD 16x2)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Độ phức tạp</strong></td>
+                                <td>Đơn giản</td>
+                                <td>Trung bình (nhiều dây)</td>
+                                <td>Trung bình (cần địa chỉ)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted mt-2"><strong>Khi nào nên dùng?</strong><br />
+                        - UART: Khi cần debug đơn giản hoặc giao tiếp 1-1 (như với máy tính).<br />
+                        - SPI: Khi cần tốc độ cao, như với LED Matrix hoặc thẻ SD.<br />
+                        - I2C: Khi cần tiết kiệm chân và giao tiếp với nhiều thiết bị, như LCD hoặc cảm biến.
+                    </p>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng giao thức với thiết bị
+                        quen
+                        thuộc (như LCD, LED Matrix) trước khi kết hợp.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-10">
+        <h2 class="h3 text-secondary mb-3">Lưu ý khi sử dụng các giao thức trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Khi làm việc với UART, SPI, và I2C trên ESP32, ta có thể gặp một số lỗi phổ
+                        biến.<br />Dưới đây là các lưu ý và cách khắc phục:</p>
+                    <h4 class="mt-3 mb-2">Lưu ý với UART:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Tốc độ baud không khớp:</strong><br />Nếu không thấy dữ liệu
+                            trên Serial Monitor, kiểm tra baud rate (như 115200) khớp giữa code và phần mềm.<br />Giải
+                            pháp:
+                            Đặt cùng tốc độ trong <code>Serial.begin()</code> và Serial Monitor.</li>
+                        <li class="list-group-item"><strong>Chân UART0 bị chiếm:</strong><br />UART0 (GPIO 1, 3) dùng
+                            cho
+                            debug, không nên kết nối thiết bị khác.<br />Giải pháp: Dùng UART2 (GPIO 17, 16) cho thiết
+                            bị
+                            ngoài.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý với SPI:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Sai chân CS:</strong><br />Nếu LED Matrix không hoạt động,
+                            kiểm
+                            tra chân CS (như GPIO 5) đúng với code.<br />Giải pháp: Kiểm tra sơ đồ kết nối và khai báo
+                            trong
+                            code (như LedControl).</li>
+                        <li class="list-group-item"><strong>Tốc độ SPI quá cao:</strong><br />Tốc độ cao (như 80 MHz) có
+                            thể
+                            gây lỗi với thiết bị chậm.<br />Giải pháp: Giảm tốc độ SPI (như 1 MHz) bằng
+                            <code>SPI.beginTransaction()</code>.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý với I2C:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Xung đột địa chỉ:</strong><br />Nếu LCD không hiển thị, có
+                            thể
+                            địa chỉ I2C sai hoặc xung đột.<br />Giải pháp: Dùng I2C Scanner để tìm địa chỉ đúng (như
+                            0x27).
+                        </li>
+                        <li class="list-group-item"><strong>Tín hiệu không ổn định:</strong><br />Tín hiệu I2C có thể
+                            yếu
+                            nếu dây dài hoặc không có pull-up.<br />Giải pháp: Thêm điện trở pull-up (4.7k ohm) trên
+                            SDA,
+                            SCL.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý chung:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Xung đột chân GPIO:</strong><br />Tránh dùng cùng GPIO cho
+                            nhiều
+                            giao thức (như GPIO 21, 22 cho I2C và SPI).<br />Giải pháp: Kiểm tra sơ đồ chân ESP32 trước
+                            khi
+                            kết nối.</li>
+                        <li class="list-group-item"><strong>Nguồn không ổn định:</strong><br />Nhiều thiết bị (LCD, LED
+                            Matrix) cần dòng lớn, gây sụt áp.<br />Giải pháp: Dùng nguồn ngoài 5V và tụ lọc (100uF).
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng giao thức riêng lẻ
+                        trước,
+                        dùng Wokwi để mô phỏng nếu không có phần cứng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-11">
+        <h2 class="h3 text-secondary mb-3">Kết luận và bài tập về nhà</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mt-3 mb-2">Kết luận</h4>
+                    <p class="text-muted">Các giao thức UART, SPI, và I2C đều rất quan trọng khi làm việc với
+                        ESP32:<br />
+                        - UART đơn giản, dễ debug (như ta đã dùng Serial Monitor).<br />
+                        - SPI tốc độ cao, phù hợp cho LED Matrix (MAX7219 ở bài trước).<br />
+                        - I2C tiết kiệm chân, hoàn hảo cho LCD và cảm biến (như LCD 16x2 ở bài trước).<br />
+                        Hiểu và sử dụng chúng sẽ giúp ta xây dựng các dự án IoT thú vị hơn.</p>
+                    <h4 class="mt-3 mb-2">Bài tập về nhà</h4>
+                    <p class="text-muted">Kết hợp UART, SPI, và I2C trong một dự án nhỏ:<br /></p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Yêu cầu:</strong><br />
+                            - Dùng I2C để đọc gia tốc góc từ cảm biến (như MPU6050).<br />
+                            - Dùng SPI để hiển thị gia tốc góc lên LED Matrix (MAX7219).<br />
+                            - Dùng UART để gửi dữ liệu gia tốc góc qua Serial Monitor.
+                        </li>
+                        <li class="list-group-item"><strong>Kết nối gợi ý:</strong><br />
+                            - MPU6050: SDA (GPIO 21), SCL (GPIO 22).<br />
+                            - LED Matrix: MOSI (GPIO 23), SCLK (GPIO 18), CS (GPIO 5).<br />
+                            - UART0 (GPIO 1, 3) cho Serial Monitor.
+                        </li>
+                        <li class="list-group-item"><strong>Thời hạn:</strong><br />Hoàn thành và nộp bài trước buổi sau.<br />Nộp qua link Wokwi hoặc video demo.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code gợi ý:</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\Wire.h>
+#include <\SPI.h>
+#include <\LedControl.h>
+// Thư viện MPU6050 (giả định đã cài)
+
+LedControl lc = LedControl(23, 18, 5, 1);
+
+void setup() {
+    Serial.begin(115200); // UART
+    Wire.begin(21, 22);   // I2C
+    SPI.begin();          // SPI
+    lc.shutdown(0, false);
+    lc.setIntensity(0, 8);
+    lc.clearDisplay(0);
+    // Khởi động MPU6050 (giả định)
+}
+
+void loop() {
+    // Đọc gia tốc từ MPU6050 (giả định)
+    float gia_toc = 25.5; // Giá trị giả định
+    // Gửi qua UART
+    Serial.print("GYRO: ");
+    Serial.print(gia_toc);
+    // Hiển thị lên LED Matrix (giả định logic)
+    // Tự làm.
+    delay(1000);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Bắt đầu với từng giao thức
+                        riêng,
+                        sau đó kết hợp chúng trong dự án.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 11;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
