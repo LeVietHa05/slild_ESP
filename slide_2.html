@@ -129,23 +129,56 @@ void loop() {
                     <pre>
 #include <\LedControl.h>
 
-// Khởi tạo LedControl (DIN, CLK, CS, số ma trận)
-LedControl lc = LedControl(23, 18, 5, 1);
+// Use the MD_MAX72XX library to Print some text on the display
+//
+// Demonstrates the use of the library to print text.
+//
+// User can enter text on the serial monitor and this will display as a
+// message on the display.
+#include <\MD_Parola.h>
+#include <\MD_MAX72xx.h>
+#include <\SPI.h>
 
-void setup() {
-    lc.shutdown(0, false); // Bật ma trận
-    lc.setIntensity(0, 8); // Độ sáng (0-15)
-    lc.clearDisplay(0); // Xóa màn hình
-    // Ký tự "A" dạng 8x8
-    byte a[8] = {0x18, 0x24, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x42};
-    for (int i = 0; i < 8; i++) {
-        lc.setRow(0, i, a[i]);
-    }
+#define HARDWARE_TYPE MD_MAX72XX::PAROLA_HW
+#define MAX_DEVICES 4
+
+#define CLK_PIN 18 // or SCK
+#define DATA_PIN 23 // or MOSI
+#define CS_PIN 5 // or SS
+
+MD_Parola ledMatrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+
+void setup()
+{
+    ledMatrix.begin(); // initialize the LED Matrix
+    ledMatrix.setIntensity(15); // set the brightness of the LED matrix display (from 0 to 15)
+    ledMatrix.displayClear(); // clear LED matrix display
 }
 
-void loop() {
-// Có thể thêm hiệu ứng cuộn hoặc thay đổi ký tự
+void loop()
+{
+    ledMatrix.setTextAlignment(PA_LEFT);
+    ledMatrix.print("Left"); // display text
+    delay(2000);
+
+    ledMatrix.setTextAlignment(PA_CENTER);
+    ledMatrix.print("Center"); // display text
+    delay(2000);
+
+    ledMatrix.setTextAlignment(PA_RIGHT);
+    ledMatrix.print("Right"); // display text
+    delay(2000);
+
+    ledMatrix.setTextAlignment(PA_CENTER);
+    ledMatrix.setInvert(true);
+    ledMatrix.print("Invert"); // display text inverted
+    delay(2000);
+
+    ledMatrix.setInvert(false);
+    ledMatrix.print(1234); // display number
+    delay(2000);
 }
+
               </pre>
                     <p class="text-muted mt-2"><strong>Mẹo:</strong> Nếu ma trận không hiển thị, kiểm tra nguồn, chân
                         kết nối (GPIO 23, 18, 5), và đảm bảo cài đúng thư viện. Dùng Serial Monitor để debug trạng thái.
