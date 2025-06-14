@@ -127,14 +127,6 @@ void loop() {
                     </ul>
                     <h4 class="mt-3 mb-2">Ví dụ code: Hiển thị ký tự "A" trên LED Matrix</h4>
                     <pre>
-#include <\LedControl.h>
-
-// Use the MD_MAX72XX library to Print some text on the display
-//
-// Demonstrates the use of the library to print text.
-//
-// User can enter text on the serial monitor and this will display as a
-// message on the display.
 #include <\MD_Parola.h>
 #include <\MD_MAX72xx.h>
 #include <\SPI.h>
@@ -206,12 +198,13 @@ void loop()
                             <code>[env:esp32dev]</code>,
                             thêm dòng <code>lib_deps</code> để cài thư viện. Ví dụ:
                             <pre>
-[env:esp32dev]
+[env:esp32doit-devkit-v1]
 platform = espressif32
-board = esp32dev
+board = esp32doit-devkit-v1
 framework = arduino
-lib_deps = 
-    wayoda/LedControl @ ^1.0.6
+lib_deps =
+    majicdesigns/MD_MAX72XX@^3.5.1 
+    majicdesigns/MD_Parola@^3.7.3
                       </pre>
                         </li>
                         <li class="list-group-item"><strong>Chọn thư viện phù hợp:</strong>

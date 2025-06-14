@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP8266, ESP32, C++ và Wokwi</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+
+
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">Giao tiếp ESP8266 với hệ thống cơ cấu chấp hành</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: Sử dụng ESP32 để điều khiển các thiết bị ngoại vi</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+
+    <div class="slide" id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu về điều khiển thiết bị với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">ESP32 là một vi điều khiển mạnh mẽ, có thể điều khiển nhiều thiết bị như
+                        Buzzer,
+                        Servo, và Relay.<br />Bài này sẽ giúp bạn làm quen với cách sử dụng chúng.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Điều khiển thiết bị là gì?</strong><br />Là cách ESP32 gửi
+                            tín
+                            hiệu để bật/tắt hoặc điều chỉnh thiết bị, giống như bạn bật đèn bằng công tắc.<br />Bạn đã
+                            thử
+                            điều khiển LED bằng nút nhấn ở bài trước!</li>
+                        <li class="list-group-item"><strong>Tầm quan trọng trong IoT:</strong><br />
+                            - Giúp tự động hóa nhà thông minh (như bật đèn, mở cửa).<br />
+                            - Tạo âm thanh cảnh báo hoặc điều khiển robot.<br />
+                            ESP32 làm được tất cả nhờ các chân GPIO và PWM.
+                        </li>
+                        <li class="list-group-item"><strong>Ví dụ một vài thiết bị chính:</strong><br />
+                            - Buzzer: Phát âm thanh (như chuông báo).<br />
+                            - Servo: Xoay động cơ (như cánh tay robot).<br />
+                            - Relay: Bật/tắt thiết bị điện (như quạt, đèn lớn).
+                        </li>
+                        <li class="list-group-item"><strong>Mục tiêu bài thuyết trình:</strong><br />Học cách kết nối và
+                            lập
+                            trình để điều khiển Buzzer, Servo, Relay trên ESP32 một cách dễ dàng.</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Bắt đầu với thiết bị đơn giản
+                        như
+                        Buzzer, sau đó thử Servo và Relay.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://how2electronics.com/wp-content/uploads/2022/10/Home-Automation-using-ESP32-Blynk-2.0-with-Feedback.jpg"
+                        class="img-fluid" alt="ESP32 điều khiển thiết bị">
+                    <img src="https://circuitdigest.com/sites/default/files/contest-article/ESP32%20home%20automation%20using%20CADIO.png"
+                        class="img-fluid" alt="Nhà thông minh với ESP32">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2024/09/ESP32-Car-Robot-Final-Result.jpg?resize=750%2C422&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="Robot dùng Servo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về Buzzer</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Buzzer là thiết bị phát âm thanh, bạn có thể dùng nó để tạo chuông báo hoặc
+                        hiệu
+                        ứng âm thanh.<br />Có hai loại chính: Active và Passive.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Buzzer là gì?</strong><br />Là một loa nhỏ, phát âm thanh
+                            khi
+                            nhận tín hiệu từ ESP32.<br />Active (có mạch bên trong) phát âm cố định, Passive (không có
+                            mạch)
+                            cần PWM để điều chỉnh.</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Active: Chỉ cần cấp điện (HIGH/LOW) là phát.<br />
+                            - Passive: Cần tín hiệu PWM (như bạn đã dùng với LED ở bài trước) để tạo tần số âm thanh.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Dễ sử dụng, giá rẻ.<br />
+                            - Phù hợp cho cảnh báo hoặc hiệu ứng âm thanh đơn giản.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Âm thanh giới hạn, không rõ nét như loa lớn.<br />
+                            - Passive cần PWM, hơi phức tạp hơn Active.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Báo động khi nhiệt độ cao.<br />
+                            - Tạo âm thanh trong trò chơi đơn giản.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử với Buzzer Active trước, sau
+                        đó
+                        thử Passive với PWM.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://davidjones.sportronics.com.au/grove/buzzers.jpg" class="img-fluid"
+                        alt="Buzzer Active và Passive">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9Yz34xAwvx1XgQRpTzXb9z_xefVdxKb4DqA&s"
+                        class="img-fluid" alt="ESP32 với Buzzer">
+                    <img src="https://esp32io.com/images/cover/esp32-piezo-buzzer.jpg" class="img-fluid"
+                        alt="Buzzer phát âm thanh">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">Sử dụng Buzzer với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Bạn có thể kết nối Buzzer với ESP32 và điều khiển nó phát âm thanh.<br />Ở
+                        đây, ta
+                        sẽ thử với cả Active và Passive.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối Buzzer:</strong><br />
+                            - Active: Kết nối chân + với GPIO (như 15), chân - với GND.<br />
+                            - Passive: Kết nối chân + với GPIO (như 15), chân - với GND, cần PWM.
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Active: Dùng <code>digitalWrite()</code> để bật/tắt (như bạn đã làm với LED).<br />
+                            - Passive: Dùng <code>analogWrite()</code> hoặc <code>tone()</code> để tạo tần số (PWM).
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Đảm bảo nguồn đủ mạnh (ESP32 cung cấp tối đa 20 mA).<br />
+                            - Passive cần điện trở hạn dòng (220 ohm) nếu không có mạch bảo vệ.<br />
+                            - Tránh dùng chân đặc biệt (như GPIO 0, 2) khi khởi động.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Điều khiển Active và Passive Buzzer</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+const int buzzerActivePin = 15; // Chân Buzzer Active
+const int buzzerPassivePin = 4; // Chân Buzzer Passive
+
+void setup() {
+    pinMode(buzzerActivePin, OUTPUT);
+    pinMode(buzzerPassivePin, OUTPUT);
+}
+
+void loop() {
+    // Điều khiển Active Buzzer
+    digitalWrite(buzzerActivePin, HIGH); // Bật
+    delay(1000);
+    digitalWrite(buzzerActivePin, LOW);  // Tắt
+    delay(1000);
+
+    // Điều khiển Passive Buzzer
+    tone(buzzerPassivePin, 1000); // Tần số 1000 Hz
+    delay(1000);
+    noTone(buzzerPassivePin);      // Tắt
+    delay(1000);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Nếu không thể dùng được tone,
+                        thử với arduino uno xem sao?</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2"><img
+                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9Yz34xAwvx1XgQRpTzXb9z_xefVdxKb4DqA&s"
+                        class="img-fluid" alt="ESP32 với Buzzer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về Servo</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Servo là động cơ có thể xoay chính xác, bạn có thể dùng nó để làm cánh tay
+                        robot
+                        hoặc điều khiển góc.<br />Nó rất phổ biến trong các dự án DIY.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Servo là gì?</strong><br />Là động cơ nhỏ, xoay từ 0 đến 180
+                            độ
+                            dựa trên tín hiệu PWM từ ESP32.<br />Nó có 3 dây: VCC (nguồn), GND, và Signal (tín hiệu).
+                        </li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Nhận tín hiệu PWM (như bạn đã dùng với LED sáng dần ở bài trước).<br />
+                            - Độ rộng xung (pulse width) từ 0.5ms (0 độ) đến 2.5ms (180 độ) quyết định góc xoay.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Xoay chính xác, dễ điều khiển.<br />
+                            - Phù hợp cho robot hoặc mô hình.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Cần nguồn riêng (5V), ESP32 không đủ dòng.<br />
+                            - Tiêu thụ điện cao khi hoạt động liên tục.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Điều khiển cánh tay robot.<br />
+                            - Mở/đóng cửa tự động.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Kiểm tra nguồn 5V trước khi kết
+                        nối
+                        Servo để tránh hỏng ESP32.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://nshopvn.com/wp-content/uploads/2019/03/dong-co-servo-mg996-360-do-6k7w-3.jpg"
+                        class="img-fluid" alt="Servo và các dây kết nối">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2024/01/ESP32-Servo-Motor.jpg?resize=750%2C422&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="ESP32 với Servo">
+                    <img src="https://www.hiwonder.com/cdn/shop/files/b8421501ceee8ed8defa49d79fc692df_3c556700-21c0-4b28-b65e-70944dd7b66b.jpg?v=1717552032"
+                        class="img-fluid" alt="Servo xoay cánh tay robot">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Sử dụng Servo với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Bạn có thể kết nối Servo với ESP32 và điều khiển nó xoay góc.<br />Ở đây, ta
+                        sẽ
+                        dùng thư viện ESP32Servo.h để đơn giản hóa.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối Servo:</strong><br />
+                            - Chân Signal với GPIO (như 15).<br />
+                            - Chân VCC với nguồn 5V (nguồn ngoài), GND với GND chung.<br />
+                            - Cần tụ lọc (100uF) nếu Servo rung.
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Dùng thư viện <code>Servo.h</code>.<br />
+                            - Gọi <code>servo.write(angle)</code> để xoay góc từ 0 đến 180 độ.<br />
+                            - PWM được tạo tự động bởi thư viện.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Sử dụng nguồn ngoài 5V vì Servo cần dòng lớn (200-500 mA).<br />
+                            - Tránh dùng nhiều Servo cùng lúc trên cùng nguồn USB.<br />
+                            - Kiểm tra góc tối đa của Servo để không làm hỏng.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Xoay Servo từ 0 đến 180 độ</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\ESP32Servo.h>
+
+Servo myServo;
+const int servoPin = 15;
+
+void setup() {
+    myServo.attach(servoPin); // Khởi động Servo
+}
+
+void loop() {
+    myServo.write(0);   // Xoay về 0 độ
+    delay(1000);
+    myServo.write(90);  // Xoay về 90 độ
+    delay(1000);
+    myServo.write(180); // Xoay về 180 độ
+    delay(1000);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử thay đổi góc trong
+                        <code>write()</code> để thấy Servo xoay khác nhau. <br>
+                        Nếu servo không xoay hay có lỗi liên quan đến thư viện, đã đến lúc tìm hiểu về ledcwrite trong
+                        esp =))
+                    </p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://thumbs.wokwi.com/projects/399724369473233921/social/1717465714795.png"
+                        class="img-fluid" alt="Sơ đồ kết nối Servo với ESP32">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2024/01/ESP32-Servo-Motor.jpg?resize=750%2C422&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="ESP32 với Servo">
+                    <img src="https://thumbs.wokwi.com/projects/398169515146729473/social/1715982890155.png"
+                        class="img-fluid" alt="Servo xoay góc 90 độ">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về Relay</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Relay là công tắc điện tử, giúp ESP32 điều khiển các thiết bị điện lớn như đèn
+                        hoặc quạt.<br />Có hai loại: cơ học và rắn (Solid State).</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Relay là gì?</strong><br />Là thiết bị đóng/mở mạch điện dựa
+                            trên tín hiệu từ ESP32.<br />Nó có 3 chân chính: VCC, GND, và IN (tín hiệu).</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Khi ESP32 gửi HIGH (3.3V), Relay đóng mạch, bật thiết bị.<br />
+                            - Khi gửi LOW, Relay mở mạch, tắt thiết bị.<br />
+                            - Loại rắn không có bộ phận cơ học, bền hơn.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Điều khiển thiết bị công suất cao (220V, 10A).<br />
+                            - An toàn cho ESP32 vì cách ly điện.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Cần nguồn riêng (5V) cho Relay.<br />
+                            - Loại cơ học có thể kêu tiếng "click" khi bật/tắt.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Bật/tắt đèn hoặc quạt trong nhà thông minh.<br />
+                            - Điều khiển máy bơm nước.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Luôn kiểm tra nguồn 5V và cẩn
+                        thận
+                        với điện 220V khi dùng Relay.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://nshopvn.com/wp-content/uploads/2019/03/module-1-relay-ran-ssr-5vdc-qon2-1.jpg"
+                        class="img-fluid" alt="Relay rắn">
+                    <img src="https://plctech.com.vn/wp-content/uploads/2020/09/relay-la-gi.jpg" class="img-fluid"
+                        alt="Relay cơ học ">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/12/ESP32-Relay-Module-Tutorial-project-example-off.jpg?resize=750%2C422&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="Relay bật/tắt đèn">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Sử dụng Relay với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Bạn có thể kết nối Relay với ESP32 để bật/tắt các thiết bị điện.<br />Ở đây,
+                        ta sẽ
+                        thử với một Relay đơn.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối Relay:</strong><br />
+                            - Chân VCC với nguồn 5V (nguồn ngoài).<br />
+                            - Chân GND với GND chung.<br />
+                            - Chân IN với GPIO (như 15).<br />
+                            - Chân COM và NO nối với thiết bị điện (như đèn 220V).
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Dùng <code>digitalWrite()</code> để gửi HIGH (bật) hoặc LOW (tắt).<br />
+                            - Relay sẽ đóng/mở mạch điện dựa trên tín hiệu.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Dùng nguồn 5V riêng cho Relay, không dùng USB ESP32.<br />
+                            - Cẩn thận với điện 220V, luôn kiểm tra cách ly.<br />
+                            - Thêm diode bảo vệ nếu Relay cơ học tạo nhiễu.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Bật/tắt Relay</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+const int relayPin = 15; // Chân điều khiển Relay
+
+void setup() {
+    pinMode(relayPin, OUTPUT);
+    digitalWrite(relayPin, LOW); // Tắt ban đầu
+}
+
+void loop() {
+    digitalWrite(relayPin, HIGH); // Bật Relay
+    delay(2000);                  // Bật 2 giây
+    digitalWrite(relayPin, LOW);  // Tắt Relay
+    delay(2000);                  // Tắt 2 giây
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử với đèn LED nhỏ trước khi
+                        kết
+                        nối thiết bị 220V để an toàn.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://thumbs.wokwi.com/projects/387875565838062593/social/1706165815088.png"
+                        class="img-fluid" alt="Sơ đồ kết nối Relay với ESP32">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgOyYTstIy6iO1Bl0quqG5lAU9HO5hwamE59y-lZbGuDdR-dmyohoErQgJjZ6miYxU5o5Fg7RA4CjGoxSJCwUlRvL1imwGIJ78j4s6d47aQR_qxDk-jGtWeBrfZA1uyRXPzdq_i9bHWmbtSIuabpmUwA2d_7sB8q-7BzUQMHI8tiTOnrUv4v_VWV82Gr5k/s865/2025-05-25%2020%2049%2002.png"
+                        class="img-fluid" alt="ESP32 điều khiển Relay">
+                    <img src="https://thumbs.wokwi.com/projects/400998947790520321/social/1718681247400.png"
+                        class="img-fluid" alt="Relay bật/tắt đèn">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">So sánh Buzzer, Servo, và Relay</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Hiểu sự khác biệt giữa Buzzer, Servo, và Relay giúp bạn chọn thiết bị phù
+                        hợp.<br />Dưới đây là bảng so sánh:</p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tiêu chí</th>
+                                <th>Buzzer</th>
+                                <th>Servo</th>
+                                <th>Relay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Cách điều khiển</strong></td>
+                                <td>Digital (Active) hoặc PWM (Passive)</td>
+                                <td>PWM (góc 0-180 độ)</td>
+                                <td>Digital (HIGH/LOW)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nguồn</strong></td>
+                                <td>3.3V (ESP32 đủ)</td>
+                                <td>5V (nguồn ngoài)</td>
+                                <td>5V (nguồn ngoài)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ứng dụng</strong></td>
+                                <td>Phát âm thanh (báo động)</td>
+                                <td>Xoay động cơ (robot)</td>
+                                <td>Bật/tắt thiết bị 220V</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Yêu cầu phần cứng</strong></td>
+                                <td>Điện trở (Passive)</td>
+                                <td>Tụ lọc, nguồn 5V</td>
+                                <td>Diode bảo vệ, nguồn 5V</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Độ phức tạp</strong></td>
+                                <td>Dễ (như LED)</td>
+                                <td>Trung bình (PWM)</td>
+                                <td>Khó (điện 220V)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted mt-2"><strong>Khi nào nên dùng?</strong><br />
+                        - Buzzer: Khi cần âm thanh cảnh báo.<br />
+                        - Servo: Khi cần xoay chính xác (như cánh tay).<br />
+                        - Relay: Khi cần điều khiển thiết bị điện lớn.<br />
+                    </p>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng thiết bị riêng trước
+                        khi
+                        kết hợp chúng.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-10">
+        <h2 class="h3 text-secondary mb-3">Lưu ý khi sử dụng các thiết bị trên ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Khi dùng Buzzer, Servo, và Relay với ESP32, bạn có thể gặp lỗi.<br />Dưới đây
+                        là
+                        các lưu ý và cách khắc phục:</p>
+                    <h4 class="mt-3 mb-2">Lưu ý với Buzzer:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Không phát âm:</strong><br />Nếu Buzzer không kêu, Thử dùng
+                            digitalWrite thay vì tone hoặc analog xem.<br /></li>
+                        <li class="list-group-item"><strong>Nhiễu âm thanh:</strong><br />Passive có thể phát âm nhiễu
+                            nếu
+                            tần số không ổn.<br />Giải pháp: Thêm điện trở hạn dòng (220 ohm).</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý với Servo:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Rung hoặc không xoay:</strong><br />Nếu Servo rung, nguồn
+                            không
+                            đủ hoặc PWM sai.<br />Giải pháp: Dùng nguồn 5V ngoài và kiểm tra <code>write()</code>.</li>
+                        <li class="list-group-item"><strong>Tốn GPIO:</strong><br />Mỗi Servo cần 1 chân PWM.<br />Giải
+                            pháp: Dùng thư viện hỗ trợ nhiều Servo (như ESP32Servo.h).</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý với Relay:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Không bật/tắt:</strong><br />Nếu Relay không hoạt động, kiểm
+                            tra
+                            nguồn 5V và chân IN.<br />Giải pháp: Đảm bảo HIGH (3.3V) đủ để kích hoạt.</li>
+                        <li class="list-group-item"><strong>Nhiễu điện:</strong><br />Relay cơ học có thể tạo nhiễu khi
+                            đóng/mở.<br />Giải pháp: Thêm tụ điện giữa hai chân COM và NO để loại bớt nhiễu </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Lưu ý chung:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Xung đột GPIO:</strong><br />Tránh dùng cùng chân cho nhiều
+                            thiết bị.<br />Giải pháp: Kiểm tra sơ đồ chân trước khi kết nối.</li>
+                        <li class="list-group-item"><strong>Nguồn không đủ:</strong><br />Servo và Relay cần dòng lớn,
+                            USB
+                            không đủ.<br />Giải pháp: Dùng nguồn ngoài 5V và kiểm tra dòng (500 mA).</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử trên Wokwi hoặc dùng LED
+                        thay
+                        thế trước khi kết nối thiết bị thật.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-11">
+        <h2 class="h3 text-secondary mb-3">Kết luận và bài tập về nhà</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mt-3 mb-2">Kết luận</h4>
+                    <p class="text-muted">ESP32 có thể điều khiển nhiều thiết bị hữu ích:<br />
+                        - Buzzer tạo âm thanh (như báo động).<br />
+                        - Servo xoay chính xác (như robot).<br />
+                        - Relay bật/tắt thiết bị điện (như đèn).<br />
+                        Với PWM và digital output, bạn đã học cách điều khiển chúng, mở ra cơ hội làm dự án IoT thú vị!
+                    </p>
+                    <h4 class="mt-3 mb-2">Bài tập về nhà</h4>
+                    <p class="text-muted">Kết hợp Buzzer, Servo, và Relay trong một dự án nhỏ:<br /></p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Yêu cầu:</strong><br />
+                            - Dùng nút nhấn để bật/tắt Relay (điều khiển đèn LED).<br />
+                            - Dùng Servo để xoay khi Relay bật.<br />
+                            - Dùng Buzzer phát âm khi Servo xoay.
+                        </li>
+                        <li class="list-group-item"><strong>Kết nối gợi ý:</strong><br />
+                            - Nút (GPIO 15), Relay (GPIO 4), Servo (GPIO 16), Buzzer (GPIO 17).<br />
+                            - Nguồn 5V ngoài cho Servo và Relay.
+                        </li>
+                        <li class="list-group-item"><strong>Thời hạn:</strong><br />Hoàn thành và nộp bài trước thời gian của buổi sau.<br />Nộp qua link Wokwi hoặc video demo.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code gợi ý:</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\ESP32Servo.h>
+
+Servo myServo;
+const int buttonPin = 15;
+const int relayPin = 4;
+const int servoPin = 16;
+const int buzzerPin = 17;
+int lastButtonState = HIGH;
+
+void setup() {
+    pinMode(buttonPin, INPUT_PULLUP);
+    pinMode(relayPin, OUTPUT);
+    pinMode(buzzerPin, OUTPUT);
+    myServo.attach(servoPin);
+    digitalWrite(relayPin, LOW);
+}
+
+void loop() {
+    int reading = digitalRead(buttonPin);
+    if (reading != lastButtonState && reading == LOW) {
+        digitalWrite(relayPin, !digitalRead(relayPin));
+        if (digitalRead(relayPin) == HIGH) {
+        myServo.write(90);
+        tone(buzzerPin, 1000);
+        } else {
+        myServo.write(0);
+        noTone(buzzerPin);
+        }
+    }
+    lastButtonState = reading;
+    delay(50);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng phần (Relay, Servo,
+                        Buzzer)
+                        trước khi kết hợp tất cả.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 11;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
