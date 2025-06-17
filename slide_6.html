@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thuyết trình: ESP8266, ESP32, C++ và Wokwi</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        /* styles.css */
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Slide Content -->
+
+
+    <div class="slide active" id="slide-1">
+        <h1 class="display-4 text-primary mb-4">ESP32 - Nhà Thông Minh</h1>
+        <p class="lead text-muted">Chào mừng đến với bài thuyết trình thực hành IoT</p>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Mục tiêu: kết hợp các ngoại vi, cảm biến, cơ cấu chấp hành thành 1 hệ thống hoàn
+                chỉnh</li>
+            <li class="list-group-item">Công cụ: Wokwi để mô phỏng</li>
+        </ul>
+    </div>
+
+
+    <div class="slide" id="slide-2">
+        <h2 class="h3 text-secondary mb-3">Giới thiệu về hệ thống nhà thông minh</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Hệ thống nhà thông minh giúp tự động hóa ngôi nhà của bạn.<br />ESP32 sẽ là
+                        "bộ
+                        não" để điều khiển mọi thứ trong bài kiểm tra này.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Nhà thông minh là gì?</strong><br />Là ngôi nhà sử dụng công
+                            nghệ để tự động bật/tắt đèn, mở cửa, hoặc cảnh báo nguy hiểm.<br />Giống như bạn đã điều
+                            khiển
+                            LED bằng nút nhấn ở bài trước!</li>
+                        <li class="list-group-item"><strong>Vai trò của ESP32:</strong><br />
+                            - Đọc dữ liệu từ cảm biến.<br />
+                            - Hiển thị thông tin trên màn hình.<br />
+                            - Điều khiển thiết bị như Servo, Buzzer, LED.
+                        </li>
+                        <li class="list-group-item"><strong>Các thành phần trong bài kiểm tra:</strong><br />
+                            - Cảm biến: MQ2 (khí gas), DHT22 (nhiệt độ, độ ẩm), PIR (chuyển động).<br />
+                            - Màn hình LCD: Hiển thị dữ liệu.<br />
+                            - Servo: Mở/đóng cửa.<br />
+                            - Buzzer và LED: Cảnh báo khi có sự cố.
+                        </li>
+                        <li class="list-group-item"><strong>Mục tiêu bài kiểm tra:</strong><br />Xây dựng một hệ thống
+                            hoàn
+                            chỉnh để giám sát và điều khiển nhà thông minh.</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Bắt đầu bằng cách thử từng thành
+                        phần riêng trước khi kết hợp.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://static.vecteezy.com/system/resources/previews/058/802/733/non_2x/smart-home-automation-with-wi-fi-connected-devices-vector.jpg"
+                        class="img-fluid" alt="Hệ thống nhà thông minh">
+                    <img src="https://pi.ezlo.com/wp-content/uploads/2023/10/pir-sensor-with-ac-lamp-wiring-diagram.webp"
+                        class="img-fluid" alt="ESP32 với các cảm biến">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về cảm biến MQ2</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">MQ2 là cảm biến phát hiện khí gas, giúp cảnh báo rò rỉ khí trong nhà.<br />Nó
+                        rất
+                        hữu ích cho an toàn.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>MQ2 là gì?</strong><br />Là cảm biến phát hiện khí như LPG,
+                            CO,
+                            khói.<br />Nó có 4 chân: VCC, GND, DO (digital output), AO (analog output).</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Khi có khí, điện trở bên trong thay đổi.<br />
+                            - ESP32 đọc giá trị AO (analog) để đo mức độ khí.<br />
+                            - DO cho tín hiệu HIGH khi vượt ngưỡng (có thể tùy chỉnh).
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Giá rẻ, dễ sử dụng.<br />
+                            - Phát hiện nhiều loại khí.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Cần làm nóng trước (vài phút).<br />
+                            - Độ chính xác không cao trong môi trường ẩm.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Cảnh báo rò rỉ gas trong nhà thông minh.<br />
+                            - Hệ thống an toàn công nghiệp.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Để MQ2 trong không khí sạch vài
+                        phút
+                        trước khi dùng để hiệu chỉnh.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://cms.mecsu.vn/uploads/media/2023/07/cam-bien-khi-mq2-2.jpg" class="img-fluid"
+                        alt="Cảm biến MQ2">
+                    <img src="https://esp32io.com/images/cover/esp32-mq2-gas-sensor.jpg" class="img-fluid"
+                        alt="ESP32 với MQ2">
+                    <img src="https://i.ytimg.com/vi/lZuryylOZUk/oardefault.jpg?sqp=-oaymwEYCJUDENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLD4mIF9Q6nkfTLGPLYAzhuDpq2keQ"
+                        class="img-fluid" alt="MQ2 phát hiện khí gas">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về cảm biến DHT22</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">DHT22 đo nhiệt độ và độ ẩm, giúp bạn theo dõi môi trường trong nhà.<br />Nó
+                        chính
+                        xác hơn DHT11 mà bạn có thể đã nghe qua.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>DHT22 là gì?</strong><br />Là cảm biến đo nhiệt độ (-40 đến
+                            80°C) và độ ẩm (0-100%) với độ chính xác cao.<br />Có 4 chân: VCC, GND, DATA, NC (không
+                            dùng).
+                        </li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Gửi dữ liệu kỹ thuật số qua chân DATA.<br />
+                            - Cần thư viện (như DHT.h) để ESP32 đọc giá trị.<br />
+                            - Cập nhật dữ liệu mỗi 2 giây.
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Đọc chính xác, dễ kết nối.<br />
+                            - Phù hợp cho nhà thông minh.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Cần chờ 2 giây để đọc dữ liệu.<br />
+                            - Tiêu thụ điện hơn một chút so với DHT11.
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Giám sát nhiệt độ, độ ẩm trong phòng.<br />
+                            - Điều hòa không khí tự động.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Kiểm tra chân DATA có điện trở
+                        pull-up (4.7k ohm) để tín hiệu ổn định.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://bizweb.dktcdn.net/100/131/827/products/stt1279.jpg?v=1577281272537"
+                        class="img-fluid" alt="Cảm biến DHT22">
+                    <img src="https://www.iotzone.vn/wp-content/uploads/2023/12/huong-dan-cam-bien-nhiet-do-dth11-dht22-esp32-ket-noi.jpg"
+                        class="img-fluid" alt="ESP32 với DHT22">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <h2 class="h3 text-secondary mb-3">Tổng quan về cảm biến PIR Motion Sensor</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">PIR Motion Sensor phát hiện chuyển động của người, rất hữu ích để bảo vệ
+                        nhà.<br />Nó hoạt động dựa trên nhiệt độ cơ thể.</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>PIR là gì?</strong><br />Là cảm biến phát hiện chuyển động
+                            bằng
+                            cách đo thay đổi nhiệt (như từ người đi qua).<br />Có 3 chân: VCC, GND, OUT (tín hiệu).</li>
+                        <li class="list-group-item"><strong>Cách hoạt động:</strong><br />
+                            - Khi có chuyển động, OUT gửi tín hiệu HIGH.<br />
+                            - ESP32 đọc tín hiệu này để phát hiện.<br />
+                            - Có thể điều chỉnh độ nhạy và khoảng cách (bằng vít nhỏ).
+                        </li>
+                        <li class="list-group-item"><strong>Ưu điểm:</strong><br />
+                            - Dễ sử dụng, tiết kiệm điện.<br />
+                            - Phát hiện chính xác trong phạm vi 6-7m.
+                        </li>
+                        <li class="list-group-item"><strong>Nhược điểm:</strong><br />
+                            - Có thể nhầm với nhiệt từ động vật nhỏ.<br />
+                            - Cần thời gian làm nóng ban đầu (10-60 giây).
+                        </li>
+                        <li class="list-group-item"><strong>Ứng dụng:</strong><br />
+                            - Bật đèn khi có người.<br />
+                            - Cảnh báo xâm nhập trong nhà thông minh.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Đặt PIR ở nơi không có gió hoặc
+                        nhiệt độ thay đổi đột ngột để tránh sai sót.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://bizweb.dktcdn.net/thumb/large/100/190/540/products/cam-bien-chuyen-dong-pir-hc-sr501.jpg?v=1490770199433"
+                        class="img-fluid" alt="Cảm biến PIR">
+                    <img src="https://www.electronicwings.com/storage/PlatformSection/TopicContent/444/description/PIR%20Sensor%20Interfacing%20with%20ESP32.jpg"
+                        class="img-fluid" alt="ESP32 với PIR">
+                    <img src="https://roman.vn/pic/News/PIR-Motio_638334166534768899_HasThumb.png" class="img-fluid"
+                        alt="PIR phát hiện chuyển động">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <h2 class="h3 text-secondary mb-3">Sử dụng màn hình LCD với ESP32</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Màn hình LCD (16x2 với I2C) giúp hiển thị dữ liệu từ cảm biến.<br />Bạn đã
+                        dùng nó
+                        ở bài trước để hiển thị "Hello, ESP32!"</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối LCD:</strong><br />
+                            - SDA với GPIO 21, SCL với GPIO 22 (như bài trước).<br />
+                            - VCC với 5V, GND với GND.<br />
+                            - Cần điện trở pull-up (4.7k ohm) nếu tín hiệu yếu.
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Dùng thư viện <code>LiquidCrystal_I2C.h</code>.<br />
+                            - Hiển thị dữ liệu bằng <code>lcd.print()</code>.<br />
+                            - Đặt vị trí bằng <code>lcd.setCursor(x, y)</code>.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Kiểm tra địa chỉ I2C (thường 0x27) bằng I2C Scanner.<br />
+                            - Đảm bảo nguồn 5V ổn định.<br />
+                            - Tránh hiển thị quá nhanh để tránh lỗi.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Hiển thị nhiệt độ từ DHT22</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+#define DHTPIN 4
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+    Wire.begin(21, 22);
+    lcd.init();
+    lcd.backlight();
+    dht.begin();
+}
+
+void loop() {
+    float temp = dht.readTemperature();
+    lcd.setCursor(0, 0);
+    lcd.print("Temp: ");
+    lcd.print(temp);
+    lcd.print(" C");
+    delay(2000);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử hiển thị dữ liệu từ các cảm
+                        biến
+                        khác (như MQ2) để luyện tập.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://lastminuteengineers.com/wp-content/uploads/iot/Wiring-I2C-LCD-Display-to-ESP32.png"
+                        class="img-fluid" alt="Sơ đồ kết nối LCD với ESP32">
+                    <img src="https://www.elec-cafe.com/wp-content/uploads/2022/10/ESP32-DHT11-LCD-Display-Temp-Humidity.jpg"
+                        class="img-fluid" alt="LCD hiển thị nhiệt độ">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <h2 class="h3 text-secondary mb-3">Sử dụng Servo để mô phỏng mở cửa</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Servo sẽ mô phỏng mở/đóng cửa khi có tín hiệu từ cảm biến.<br />Bạn đã dùng
+                        Servo
+                        để xoay ở bài trước!</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối Servo:</strong><br />
+                            - Chân Signal với GPIO 15.<br />
+                            - Chân VCC với nguồn 5V (nguồn ngoài), GND với GND.<br />
+                            - Cần tụ lọc (100uF) nếu Servo rung.
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Dùng thư viện <code>ESP32Servo.h</code>.<br />
+                            - Xoay Servo bằng <code>servo.write(angle)</code> (0 độ = đóng, 90 độ = mở).<br />
+                            - Dựa trên tín hiệu từ PIR hoặc MQ2.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Sử dụng nguồn 5V ngoài vì Servo cần dòng lớn.<br />
+                            - Kiểm tra góc tối đa để không làm hỏng Servo.<br />
+                            - Tránh dùng cùng chân với cảm biến.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Mở cửa khi có chuyển động</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\ESP32Servo.h>
+
+Servo myServo;
+const int servoPin = 15;
+const int pirPin = 4;
+
+void setup() {
+    pinMode(pirPin, INPUT);
+    myServo.attach(servoPin);
+    myServo.write(0); // Đóng cửa ban đầu
+}
+
+void loop() {
+    if (digitalRead(pirPin) == HIGH) {
+        myServo.write(90); // Mở cửa khi có chuyển động
+    } else {
+        myServo.write(0);  // Đóng cửa
+    }
+    delay(100);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử điều chỉnh góc (như 45 độ)
+                        để mô
+                        phỏng mở một phần.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://nshopvn.com/wp-content/uploads/2019/03/dong-co-servo-sg90-180-do-rk7a-1.jpg"
+                        class="img-fluid" alt="Sơ đồ kết nối Servo với ESP32">
+                    <img src="https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2018/05/esp32-servo-wiring_bb.png?resize=828%2C394&quality=100&strip=all&ssl=1"
+                        class="img-fluid" alt="ESP32 với Servo mô phỏng cửa">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+        <h2 class="h3 text-secondary mb-3">Sử dụng Buzzer và LED để cảnh báo</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung bên trái với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Buzzer và LED sẽ cảnh báo khi có nguy hiểm (như rò rỉ gas hoặc xâm
+                        nhập).<br />Bạn
+                        đã dùng chúng ở bài trước!</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Kết nối:</strong><br />
+                            - Buzzer Passive: Chân + với GPIO 16, chân - với GND.<br />
+                            - LED: Chân + với GPIO 17 (qua điện trở 220 ohm), chân - với GND.
+                        </li>
+                        <li class="list-group-item"><strong>Cách điều khiển:</strong><br />
+                            - Buzzer: Dùng <code>tone(pin, frequency)</code> để phát âm.<br />
+                            - LED: Dùng <code>digitalWrite()</code> để bật/tắt.<br />
+                            - Kích hoạt khi MQ2 hoặc PIR phát hiện sự cố.
+                        </li>
+                        <li class="list-group-item"><strong>Lưu ý:</strong><br />
+                            - Đảm bảo nguồn đủ cho Buzzer (3.3V từ ESP32 đủ).<br />
+                            - Thêm điện trở cho LED để tránh cháy.<br />
+                            - Tránh nhiễu âm thanh từ Buzzer.
+                        </li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code ví dụ: Cảnh báo khi có gas</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+const int mq2Pin = 34;  // Chân analog MQ2
+const int buzzerPin = 16;
+const int ledPin = 17;
+
+void setup() {
+    pinMode(buzzerPin, OUTPUT);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(buzzerPin, LOW);
+    digitalWrite(ledPin, LOW);
+}
+
+void loop() {
+    int gasValue = analogRead(mq2Pin);
+    if (gasValue > 500) { // Ngưỡng gas
+        tone(buzzerPin, 1000); // Phát âm
+        digitalWrite(ledPin, HIGH); // Bật LED
+    } else {
+        noTone(buzzerPin); // Tắt âm
+        digitalWrite(ledPin, LOW); // Tắt LED
+    }
+    delay(100);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử thay đổi ngưỡng gas (như
+                        300) để
+                        điều chỉnh độ nhạy.</p>
+                </div>
+            </div>
+            <!-- Phần ảnh bên phải với khả năng cuộn -->
+            <div class="col-6 overflow-auto" style="max-height: 400px;">
+                <div class="d-flex flex-column gap-2">
+                    <img src="https://theorycircuit.com/wp-content/uploads/2024/11/Super-Mario-Melody-Tone-using-ESP32-and-Buzzer.jpg"
+                        class="img-fluid" alt="Sơ đồ kết nối Buzzer và LED">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="slide" id="slide-9">
+        <h2 class="h3 text-secondary mb-3">Thiết kế hệ thống nhà thông minh</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Hệ thống nhà thông minh sẽ kết hợp tất cả thành phần để tự động hóa.<br />Dưới
+                        đây
+                        là cách thiết kế:</p>
+                    <h4 class="mt-3 mb-2">Bước thiết kế:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Bước 1: Kết nối cảm biến</strong><br />
+                            - MQ2 (GPIO 34) phát hiện gas.<br />
+                            - DHT22 (GPIO 4) đo nhiệt độ, độ ẩm.<br />
+                            - PIR (GPIO 5) phát hiện chuyển động.
+                        </li>
+                        <li class="list-group-item"><strong>Bước 2: Kết nối hiển thị</strong><br />
+                            - LCD (SDA GPIO 21, SCL GPIO 22) hiển thị dữ liệu.<br />
+                            - Cập nhật thông tin từ MQ2, DHT22, PIR.
+                        </li>
+                        <li class="list-group-item"><strong>Bước 3: Kết nối điều khiển</strong><br />
+                            - Servo (GPIO 15) mở cửa khi PIR phát hiện.<br />
+                            - Buzzer (GPIO 16) và LED (GPIO 17) cảnh báo khi MQ2 vượt ngưỡng hoặc PIR phát hiện.
+                        </li>
+                        <li class="list-group-item"><strong>Bước 4: Lập trình</strong><br />
+                            - Dùng các thư viện (DHT.h, Servo.h, LiquidCrystal_I2C.h).<br />
+                            - Viết code để xử lý logic (như mở cửa, cảnh báo).
+                        </li>
+                        <li class="list-group-item"><strong>Bước 5: Kiểm tra</strong><br />
+                            - Đảm bảo mọi thành phần hoạt động cùng nhau.<br />
+                            - Thử với gas giả (khói) và chuyển động để kiểm tra.
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Vẽ sơ đồ kết nối trên giấy trước
+                        khi
+                        lắp ráp để tránh nhầm chân.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-10">
+        <h2 class="h3 text-secondary mb-3">Lưu ý và kiểm tra hệ thống</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <p class="text-muted">Khi xây dựng hệ thống, bạn có thể gặp lỗi.<br />Dưới đây là các lưu ý và cách
+                        kiểm
+                        tra:</p>
+                    <h4 class="mt-3 mb-2">Lưu ý:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Xung đột GPIO:</strong><br />Nếu một thành phần không hoạt
+                            động,
+                            có thể chân bị dùng chung.<br />Giải pháp: Kiểm tra lại sơ đồ chân và đổi GPIO nếu cần.</li>
+                        <li class="list-group-item"><strong>Nguồn không đủ:</strong><br />Servo, Buzzer, và LED cần dòng
+                            lớn, USB có thể không đủ.<br />Giải pháp: Dùng nguồn ngoài 5V (ít nhất 1A).</li>
+                        <li class="list-group-item"><strong>Lỗi cảm biến:</strong><br />MQ2 cần làm nóng, DHT22 cần chờ
+                            2
+                            giây, PIR cần làm nóng ban đầu.<br />Giải pháp: Chờ đủ thời gian và kiểm tra giá trị.</li>
+                        <li class="list-group-item"><strong>Nhiễu tín hiệu:</strong><br />Buzzer hoặc Servo có thể gây
+                            nhiễu
+                            cho cảm biến.<br />Giải pháp: Thêm tụ lọc (100uF) và cách ly dây.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Checklist kiểm tra:</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Bước 1:</strong><br />Kiểm tra cảm biến (MQ2, DHT22, PIR) có
+                            gửi
+                            dữ liệu không.</li>
+                        <li class="list-group-item"><strong>Bước 2:</strong><br />LCD hiển thị đúng dữ liệu từ cảm biến.
+                        </li>
+                        <li class="list-group-item"><strong>Bước 3:</strong><br />Servo mở/đóng cửa khi PIR phát hiện.
+                        </li>
+                        <li class="list-group-item"><strong>Bước 4:</strong><br />Buzzer và LED bật khi MQ2 hoặc PIR
+                            cảnh
+                            báo.</li>
+                    </ul>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng phần (cảm biến, LCD,
+                        Servo,
+                        Buzzer) trước khi ghép lại.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-11">
+        <h2 class="h3 text-secondary mb-3">Kết luận và yêu cầu nộp bài</h2>
+        <div class="row w-100 h-100">
+            <!-- Phần nội dung toàn bộ slide với khả năng cuộn -->
+            <div class="col-12 overflow-auto" style="max-height: 400px;">
+                <div class="text-left">
+                    <h4 class="mt-3 mb-2">Kết luận</h4>
+                    <p class="text-muted">Bạn đã học cách xây dựng hệ thống nhà thông minh với ESP32:<br />
+                        - Cảm biến (MQ2, DHT22, PIR) để giám sát.<br />
+                        - LCD để hiển thị dữ liệu.<br />
+                        - Servo để mở/đóng cửa.<br />
+                        - Buzzer và LED để cảnh báo.<br />
+                        Đây là bước quan trọng để trở thành một lập trình viên IoT!</p>
+                    <h4 class="mt-3 mb-2">Yêu cầu nộp bài</h4>
+                    <p class="text-muted">Hoàn thành hệ thống nhà thông minh và nộp bài:<br /></p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Yêu cầu:</strong><br />
+                            - Tích hợp tất cả thành phần (MQ2, DHT22, PIR, LCD, Servo, Buzzer, LED).<br />
+                            - Đảm bảo hệ thống hoạt động: hiển thị, mở cửa, và cảnh báo khi có sự cố.
+                        </li>
+                        <li class="list-group-item"><strong>Cách nộp:</strong><br />
+                            - Nộp code qua Wokwi hoặc video demo cho thấy hệ thống hoạt động.<br />
+                            - Ghi chú rõ cách kết nối và logic trong code.
+                        </li>
+                        <li class="list-group-item"><strong>Thời hạn:</strong><br />Hoàn thành đến buổi sau.<br />Đảm
+                            bảo
+                            nộp đúng hạn để được đánh giá.</li>
+                    </ul>
+                    <h4 class="mt-3 mb-2">Code gợi ý:</h4>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#codeCollapse" aria-expanded="false" aria-controls="codeCollapse">
+                        Hiện/Ẩn Code
+                    </button>
+                    <div class="collapse" id="codeCollapse">
+                        <pre>
+#include <\Wire.h>
+#include <\LiquidCrystal_I2C.h>
+#include <\DHT.h>
+#include <\ESP32Servo.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+#define DHTPIN 4
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+Servo myServo;
+const int mq2Pin = 34;
+const int pirPin = 5;
+const int servoPin = 15;
+const int buzzerPin = 16;
+const int ledPin = 17;
+
+void setup() {
+    Wire.begin(21, 22);
+    lcd.init();
+    lcd.backlight();
+    dht.begin();
+    pinMode(pirPin, INPUT);
+    pinMode(buzzerPin, OUTPUT);
+    pinMode(ledPin, OUTPUT);
+    myServo.attach(servoPin);
+    myServo.write(0);
+}
+
+void loop() {
+    float temp = dht.readTemperature();
+    int gasValue = analogRead(mq2Pin);
+    int pirValue = digitalRead(pirPin);
+
+    lcd.setCursor(0, 0);
+    lcd.print("T:");
+    lcd.print(temp);
+    lcd.print("C ");
+    lcd.setCursor(0, 1);
+    lcd.print("G:");
+    lcd.print(gasValue);
+
+    if (gasValue > 500 || pirValue == HIGH) {
+        tone(buzzerPin, 1000);
+        digitalWrite(ledPin, HIGH);
+        myServo.write(90); // Mở cửa khi có cảnh báo
+    } else {
+        noTone(buzzerPin);
+        digitalWrite(ledPin, LOW);
+        myServo.write(0); // Đóng cửa
+    }
+    delay(1000);
+}
+                    </pre>
+                    </div>
+                    <p class="text-muted mt-2"><strong>Mẹo cho người mới:</strong><br />Thử từng phần (cảm biến, LCD,
+                        Servo,
+                        Buzzer) trước khi ghép lại.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="btn btn-primary" onclick="prevSlide()">Trước</button>
+        <div id="cur-slide"></div>
+        <button class="btn btn-primary" onclick="nextSlide()">Tiếp</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // script.js
+        let currentSlide = 1;
+        const totalSlides = 11;
+
+    </script>
+    <script src="script.js">
+
+    </script>
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
