@@ -567,51 +567,51 @@ void loop() {
 #include <\ESP32Servo.h>
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-#define DHTPIN 4
+#define DHTPIN 19
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 Servo myServo;
 const int mq2Pin = 34;
-const int pirPin = 5;
-const int servoPin = 15;
-const int buzzerPin = 16;
+const int pirPin = 32;
+const int servoPin = 18;
+const int buzzerPin = 5;
 const int ledPin = 17;
 
 void setup() {
-    Wire.begin(21, 22);
-    lcd.init();
-    lcd.backlight();
-    dht.begin();
-    pinMode(pirPin, INPUT);
-    pinMode(buzzerPin, OUTPUT);
-    pinMode(ledPin, OUTPUT);
-    myServo.attach(servoPin);
-    myServo.write(0);
+  Wire.begin(21, 22);
+  lcd.init();
+  lcd.backlight();
+  dht.begin();
+  pinMode(pirPin, INPUT);
+  ledcAttachChannel(buzzerPin, 5000, 8, 1);
+  pinMode(ledPin, OUTPUT);
+  myServo.attach(servoPin);
+  myServo.write(0);
 }
 
 void loop() {
-    float temp = dht.readTemperature();
-    int gasValue = analogRead(mq2Pin);
-    int pirValue = digitalRead(pirPin);
+  float temp = dht.readTemperature();
+  int gasValue = analogRead(mq2Pin);
+  int pirValue = digitalRead(pirPin);
 
-    lcd.setCursor(0, 0);
-    lcd.print("T:");
-    lcd.print(temp);
-    lcd.print("C ");
-    lcd.setCursor(0, 1);
-    lcd.print("G:");
-    lcd.print(gasValue);
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print(temp);
+  lcd.print("C ");
+  lcd.setCursor(0, 1);
+  lcd.print("G:");
+  lcd.print(gasValue);
 
-    if (gasValue > 500 || pirValue == HIGH) {
-        tone(buzzerPin, 1000);
-        digitalWrite(ledPin, HIGH);
-        myServo.write(90); // Mở cửa khi có cảnh báo
-    } else {
-        noTone(buzzerPin);
-        digitalWrite(ledPin, LOW);
-        myServo.write(0); // Đóng cửa
-    }
-    delay(1000);
+  if (gasValue > 3300 || pirValue == HIGH) {
+    ledcWrite(buzzerPin, 150);
+    digitalWrite(ledPin, HIGH);
+    myServo.write(90); // Mở cửa khi có cảnh báo
+  } else {
+    ledcWrite(buzzerPin, 0);
+    digitalWrite(ledPin, LOW);
+    myServo.write(0); // Đóng cửa
+  }
+  delay(1000);
 }
                     </pre>
                     </div>
